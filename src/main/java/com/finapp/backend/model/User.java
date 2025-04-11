@@ -33,14 +33,12 @@ public class User {
     @Column(nullable = false)
     private Boolean active;
 
-    private LocalDateTime requestDeletionDate;
+    private LocalDateTime deletionRequestedAt;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FundBox> fundBoxes;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Investment> investments;
-
-    // Getters e Setters
 }
 
