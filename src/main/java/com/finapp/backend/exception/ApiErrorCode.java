@@ -51,7 +51,7 @@ public enum ApiErrorCode {
     ACCOUNT_DEACTIVATED(
             "ACCOUNT_DEACTIVATED",
             "Account is deactivated",
-            "Your account has already been deactivated and cannot be modified"
+            "Your account is in the process of being deleted. Please log in again to reactivate your account."
     ),
 
     SAME_NAME(
