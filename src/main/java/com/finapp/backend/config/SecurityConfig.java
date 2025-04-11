@@ -28,11 +28,13 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
+                .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
                 .requestMatchers(
-                        HttpMethod.POST, "/auth/login",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
-                        "/swagger-ui.html"
+                        "/swagger-ui.html",
+                        "/swagger-resources/**",
+                        "/webjars/**"
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()
