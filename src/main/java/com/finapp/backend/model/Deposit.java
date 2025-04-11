@@ -14,8 +14,8 @@ import java.time.LocalDate;
 @ToString(exclude = {"user", "fundBox"})
 @EqualsAndHashCode(exclude = {"user", "fundBox"})
 @Entity
-@Table(name = "investments")
-public class Investment {
+@Table(name = "deposit")
+public class Deposit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +28,8 @@ public class Investment {
     private LocalDate date;
 
     private String description;
+
+    /* future implementation: investment support
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -46,6 +48,7 @@ public class Investment {
             );
         }
     }
+    */
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")

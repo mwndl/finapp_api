@@ -45,5 +45,5 @@ public class FundBox {
     private Set<User> collaborators;
 
     @OneToMany(mappedBy = "fundBox", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Investment> investments;
+    private List<Deposit> deposits;
 }
