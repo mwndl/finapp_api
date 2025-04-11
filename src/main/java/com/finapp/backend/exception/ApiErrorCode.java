@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ApiErrorCode {
 
+    // validation
     PASSWORD_TOO_WEAK(
             "PASSWORD_TOO_WEAK",
             "Password does not meet complexity requirements",
@@ -29,6 +30,7 @@ public enum ApiErrorCode {
             "You must provide a password different from the current one"
     ),
 
+    // auth
     EMAIL_ALREADY_REGISTERED(
             "EMAIL_ALREADY_REGISTERED",
             "Email already registered",
@@ -44,6 +46,28 @@ public enum ApiErrorCode {
             "User not found",
             "The user was not found in the system."
     ),
+
+    // user
+    ACCOUNT_DEACTIVATED(
+            "ACCOUNT_DEACTIVATED",
+            "Account is deactivated",
+            "Your account has already been deactivated and cannot be modified"
+    ),
+
+    SAME_NAME(
+            "SAME_NAME",
+            "Name is the same",
+            "The new name must be different from the current one"
+    ),
+
+    SAME_PASSWORD(
+            "SAME_PASSWORD",
+            "Password is the same",
+            "The new password must be different from the current one"
+    ),
+
+
+    // generic
     VALIDATION_ERROR(
             "VALIDATION_ERROR",
             "Validation failed",
