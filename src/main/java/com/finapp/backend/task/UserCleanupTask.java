@@ -1,0 +1,27 @@
+package com.finapp.backend.task;
+
+import com.finapp.backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class UserCleanupTask {
+
+    private final UserRepository userRepository;
+
+    @Scheduled(cron = "0 0 3 * * *") // runs every day at 3am
+    public void deleteInactiveUsers() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+        int deleted = userRepository.deleteByActiveFalseAndDeletionRequestedAtBefore(threshold);
+
+        if (deleted > 0) {
+            log.info("Deleted {} users pending deletion for over 30 days", deleted);
+        }
+    }
+}
