@@ -29,7 +29,12 @@ public class Investment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    private InvestmentType type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private FixedIncomeType type;
+    private InvestmentSubtype subtype;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
