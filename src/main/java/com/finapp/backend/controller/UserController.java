@@ -1,6 +1,7 @@
 package com.finapp.backend.controller;
 
 import com.finapp.backend.dto.user.UpdateUserRequest;
+import com.finapp.backend.dto.user.UserResponse;
 import com.finapp.backend.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping
+    public ResponseEntity<UserResponse> getUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
+        UserResponse response = userService.getUserInfo(userDetails.getUsername());
+        return ResponseEntity.ok(response);
+    }
 
     @PutMapping
     public ResponseEntity<?> updateUser(

@@ -1,6 +1,7 @@
 package com.finapp.backend.service;
 
 import com.finapp.backend.dto.user.UpdateUserRequest;
+import com.finapp.backend.dto.user.UserResponse;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.User;
@@ -17,6 +18,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public UserResponse getUserInfo(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+
+        if (!user.getActive()) {
+            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
+        }
+
+        return new UserResponse(user.getName(), user.getEmail());
+    }
+
 
     public void updateUser(String email, UpdateUserRequest request) {
         User user = userRepository.findByEmail(email)
