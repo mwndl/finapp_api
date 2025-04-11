@@ -1,5 +1,7 @@
 package com.finapp.backend.model;
 
+import com.finapp.backend.model.enums.InvestmentSubtype;
+import com.finapp.backend.model.enums.InvestmentType;
 import jakarta.persistence.*;
 import lombok.*;
 
