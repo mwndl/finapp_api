@@ -29,6 +29,17 @@ public class UserController {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        boolean sameName = user.getName().equals(request.getName());
+        boolean samePassword = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
+
+        if (sameName) {
+            return ResponseEntity.badRequest().body("New name must be different from the current one");
+        }
+
+        if (samePassword) {
+            return ResponseEntity.badRequest().body("New password must be different from the current one");
+        }
+
         user.setName(request.getName());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         userRepository.save(user);
