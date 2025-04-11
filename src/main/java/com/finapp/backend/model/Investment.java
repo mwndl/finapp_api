@@ -33,8 +33,17 @@ public class Investment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FixedIncomeType type;
     private InvestmentSubtype subtype;
+
+    @PrePersist
+    @PreUpdate
+    private void validateSubtypeCompatibility() {
+        if (subtype.getParentType() != type) {
+            throw new IllegalArgumentException(
+                    String.format("Subtype %s is not valid for type %s", subtype, type)
+            );
+        }
+    }
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
