@@ -3,6 +3,8 @@ package com.finapp.backend.service;
 import com.finapp.backend.dto.auth.AuthResponse;
 import com.finapp.backend.dto.auth.LoginRequest;
 import com.finapp.backend.dto.auth.RegisterRequest;
+import com.finapp.backend.exception.ApiException;
+import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.model.User;
 import com.finapp.backend.repository.UserRepository;
 import com.finapp.backend.security.JwtUtil;
@@ -23,7 +25,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered");
+            throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
         }
 
         User user = new User();
@@ -45,14 +47,18 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(), request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(), request.getPassword()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
+        }
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
 
         if (!user.getActive()) {
             user.setActive(true); // reactivates if it was in the process of being deleted
