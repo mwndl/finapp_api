@@ -2,6 +2,7 @@ package com.finapp.backend.model;
 
 import com.finapp.backend.model.enums.InvestmentSubtype;
 import com.finapp.backend.model.enums.InvestmentType;
+import com.finapp.backend.model.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,26 +30,9 @@ public class Deposit {
 
     private String description;
 
-    /* future implementation: investment support
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private InvestmentType type;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private InvestmentSubtype subtype;
-
-    @PrePersist
-    @PreUpdate
-    private void validateSubtypeCompatibility() {
-        if (subtype.getParentType() != type) {
-            throw new IllegalArgumentException(
-                    String.format("Subtype %s is not valid for type %s", subtype, type)
-            );
-        }
-    }
-    */
+    private TransactionType transactionType;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
