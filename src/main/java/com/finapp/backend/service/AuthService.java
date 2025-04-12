@@ -47,15 +47,6 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(), request.getPassword()
-                    )
-            );
-        } catch (BadCredentialsException e) {
-            throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
-        }
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
@@ -64,6 +55,16 @@ public class AuthService {
             user.setActive(true); // reactivates if it was in the process of being deleted
             user.setDeletionRequestedAt(null);
             userRepository.save(user);
+        }
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(), request.getPassword()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
         }
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User
