@@ -23,9 +23,10 @@ public enum ApiErrorCode {
 
     // deposit
     MISSING_AMOUNT("MISSING_AMOUNT", "Amount is required", "The amount must be provided and greater than 0"),
+    INVALID_AMOUNT("INVALID_AMOUNT", "Invalid amount", "The amount must be greater than 0"),
     MISSING_DATE("MISSING_DATE", "Date is required", "The date must be provided"),
     MISSING_TRANSACTION_TYPE("MISSING_TRANSACTION_TYPE", "Transaction type is required", "The transaction type must be provided"),
-
+    DEPOSIT_NOT_FOUND("DEPOSIT_NOT_FOUND", "Deposit not found", "The requested deposit was not found"),
     // generic
     VALIDATION_ERROR("VALIDATION_ERROR", "Validation failed", "One or more fields did not pass validation"),
     INTERNAL_ERROR("INTERNAL_ERROR", "Unexpected error", "An unexpected error occurred"),
