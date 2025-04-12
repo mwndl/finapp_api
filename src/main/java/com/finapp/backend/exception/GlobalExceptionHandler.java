@@ -31,10 +31,12 @@ public class GlobalExceptionHandler {
                 default -> ApiErrorCode.VALIDATION_ERROR;
             };
 
+            String customMessage = fieldError.getDefaultMessage();
+
             ApiErrorResponse response = new ApiErrorResponse(
                     errorCode.getCode(),
                     errorCode.getTitle(),
-                    errorCode.getDescription()
+                    customMessage != null ? customMessage : errorCode.getDescription()
             );
 
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
