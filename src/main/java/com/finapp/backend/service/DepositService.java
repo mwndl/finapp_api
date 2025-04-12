@@ -31,6 +31,10 @@ public class DepositService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
 
+        if (!user.getActive()) {
+            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
+        }
+
         FundBox fundBox = request.getFundBoxId() != null ?
                 fundBoxRepository.findById(request.getFundBoxId())
                         .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND))
@@ -50,6 +54,10 @@ public class DepositService {
     public List<DepositResponse> listUserDeposits(String email, List<TransactionType> transactionTypes) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+
+        if (!user.getActive()) {
+            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
+        }
 
         List<Deposit> deposits = (transactionTypes == null || transactionTypes.isEmpty())
                 ? depositRepository.findByUserId(user.getId())
@@ -72,6 +80,10 @@ public class DepositService {
     public DepositSummaryResponse getDepositSummary(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+
+        if (!user.getActive()) {
+            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
+        }
 
         BigDecimal entryTotal = depositRepository.sumByUserIdAndTransactionType(user.getId(), TransactionType.ENTRY);
         BigDecimal exitTotal = depositRepository.sumByUserIdAndTransactionType(user.getId(), TransactionType.EXIT);
