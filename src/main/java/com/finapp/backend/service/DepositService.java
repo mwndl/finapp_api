@@ -2,6 +2,7 @@ package com.finapp.backend.service;
 
 import com.finapp.backend.dto.deposit.CreateDepositRequest;
 import com.finapp.backend.dto.deposit.DepositResponse;
+import com.finapp.backend.dto.deposit.DepositSummaryResponse;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
@@ -67,6 +68,22 @@ public class DepositService {
             return response;
         }).collect(Collectors.toList());
     }
+
+    public DepositSummaryResponse getDepositSummary(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+
+        BigDecimal entryTotal = depositRepository.sumByUserIdAndTransactionType(user.getId(), TransactionType.ENTRY);
+        BigDecimal exitTotal = depositRepository.sumByUserIdAndTransactionType(user.getId(), TransactionType.EXIT);
+
+        // handling null values
+        entryTotal = entryTotal != null ? entryTotal : BigDecimal.ZERO;
+        exitTotal = exitTotal != null ? exitTotal : BigDecimal.ZERO;
+
+        BigDecimal total = entryTotal.subtract(exitTotal);
+        return new DepositSummaryResponse(total);
+    }
+
 
 
 
