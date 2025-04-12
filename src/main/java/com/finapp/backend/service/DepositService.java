@@ -3,6 +3,7 @@ package com.finapp.backend.service;
 import com.finapp.backend.dto.deposit.CreateDepositRequest;
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.DepositSummaryResponse;
+import com.finapp.backend.dto.deposit.UpdateDepositRequest;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
@@ -97,6 +98,30 @@ public class DepositService {
                 entryTotal,
                 exitTotal
         );
+    }
+
+    public void updateDeposit(Long depositId, String email, UpdateDepositRequest request) {
+        Deposit deposit = depositRepository.findById(depositId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
+
+        FundBox fundBox = request.getFundBoxId() != null ?
+                fundBoxRepository.findById(request.getFundBoxId())
+                        .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND))
+                : null;
+
+        if (request.getAmount() != null) {
+            if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new ApiException(ApiErrorCode.INVALID_AMOUNT);
+            }
+            deposit.setAmount(request.getAmount());
+        }
+        if (request.getDate() != null) deposit.setDate(request.getDate());
+        if (request.getTransactionType() != null) deposit.setTransactionType(request.getTransactionType());
+
+        if (request.getDescription() != null) deposit.setDescription(request.getDescription());
+        if (request.getFundBoxId() != null) deposit.setFundBox(fundBox);
+
+        depositRepository.save(deposit);
     }
 
 

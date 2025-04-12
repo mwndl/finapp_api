@@ -3,6 +3,7 @@ package com.finapp.backend.controller;
 import com.finapp.backend.dto.deposit.CreateDepositRequest;
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.DepositSummaryResponse;
+import com.finapp.backend.dto.deposit.UpdateDepositRequest;
 import com.finapp.backend.model.enums.TransactionType;
 import com.finapp.backend.service.DepositService;
 import jakarta.validation.Valid;
@@ -44,6 +45,16 @@ public class DepositController {
     @GetMapping("/summary")
     public ResponseEntity<DepositSummaryResponse> getSummary(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(depositService.getDepositSummary(userDetails.getUsername()));
+    }
+
+    @PatchMapping("/{depositId}")
+    public ResponseEntity<Void> updateDeposit(
+            @PathVariable Long depositId,
+            @RequestBody @Valid UpdateDepositRequest request,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        depositService.updateDeposit(depositId, userDetails.getUsername(), request);
+        return ResponseEntity.noContent().build();
     }
 
 }
