@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 @Data
 @AllArgsConstructor
 public class DepositSummaryResponse {
-    private BigDecimal total;
-    private BigDecimal entryTotal;
-    private BigDecimal exitTotal;
+    private BigDecimal balance;
+    private BigDecimal entry;
+    private BigDecimal exit;
 }
