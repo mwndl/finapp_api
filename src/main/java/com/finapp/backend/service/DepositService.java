@@ -80,8 +80,11 @@ public class DepositService {
         entryTotal = entryTotal != null ? entryTotal : BigDecimal.ZERO;
         exitTotal = exitTotal != null ? exitTotal : BigDecimal.ZERO;
 
-        BigDecimal total = entryTotal.subtract(exitTotal);
-        return new DepositSummaryResponse(total);
+        return new DepositSummaryResponse(
+                entryTotal.subtract(exitTotal),
+                entryTotal,
+                exitTotal
+        );
     }
 
 

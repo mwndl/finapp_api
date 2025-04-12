@@ -9,4 +9,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class DepositSummaryResponse {
     private BigDecimal total;
+    private BigDecimal entryTotal;
+    private BigDecimal exitTotal;
 }
