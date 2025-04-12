@@ -46,14 +46,20 @@ public class DepositService {
         depositRepository.save(deposit);
     }
 
-    public List<DepositResponse> listUserDeposits(String email) {
+    public List<DepositResponse> listUserDeposits(String email, List<TransactionType> transactionTypes) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
 
-        return depositRepository.findByUserId(user.getId()).stream().map(deposit -> {
+        List<Deposit> deposits = (transactionTypes == null || transactionTypes.isEmpty())
+                ? depositRepository.findByUserId(user.getId())
+                : depositRepository.findByUserIdAndTransactionTypeIn(user.getId(), transactionTypes);
+
+        return deposits.stream().map(deposit -> {
             DepositResponse response = new DepositResponse();
             response.setId(deposit.getId());
-            response.setAmount(deposit.getTransactionType() == TransactionType.EXIT ? deposit.getAmount().negate() : deposit.getAmount());
+            response.setAmount(deposit.getTransactionType() == TransactionType.EXIT
+                    ? deposit.getAmount().negate()
+                    : deposit.getAmount());
             response.setDate(deposit.getDate());
             response.setDescription(deposit.getDescription());
             response.setTransactionType(deposit.getTransactionType().toString());
@@ -61,6 +67,7 @@ public class DepositService {
             return response;
         }).collect(Collectors.toList());
     }
+
 
 
 }
