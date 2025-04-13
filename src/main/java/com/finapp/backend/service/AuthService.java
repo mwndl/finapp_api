@@ -8,11 +8,14 @@ import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.model.User;
 import com.finapp.backend.repository.UserRepository;
 import com.finapp.backend.security.JwtUtil;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +46,9 @@ public class AuthService {
                 .build();
 
         String token = jwtUtil.generateToken(userDetails);
-        return new AuthResponse(token);
+        Date expirationDate = jwtUtil.extractExpiration(token);
+
+        return new AuthResponse(token, expirationDate);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -75,6 +80,9 @@ public class AuthService {
                 .build();
 
         String token = jwtUtil.generateToken(userDetails);
-        return new AuthResponse(token);
+
+        Date expirationDate = jwtUtil.extractExpiration(token);
+
+        return new AuthResponse(token, expirationDate);
     }
 }
