@@ -8,6 +8,9 @@ import com.finapp.backend.model.enums.TransactionType;
 import com.finapp.backend.service.DepositService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,15 +35,19 @@ public class DepositController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DepositResponse>> listDeposits(
+    public ResponseEntity<Page<DepositResponse>> listDeposits(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(required = false) List<TransactionType> transactionType
+            @RequestParam(required = false) List<TransactionType> transactionType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
         return ResponseEntity.ok(depositService.listUserDeposits(
                 userDetails.getUsername(),
-                transactionType
+                transactionType,
+                PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"))
         ));
     }
+
 
     @GetMapping("/summary")
     public ResponseEntity<DepositSummaryResponse> getSummary(@AuthenticationPrincipal UserDetails userDetails) {

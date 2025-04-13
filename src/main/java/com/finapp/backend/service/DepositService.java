@@ -14,6 +14,8 @@ import com.finapp.backend.repository.DepositRepository;
 import com.finapp.backend.repository.FundBoxRepository;
 import com.finapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -52,7 +54,7 @@ public class DepositService {
         depositRepository.save(deposit);
     }
 
-    public List<DepositResponse> listUserDeposits(String email, List<TransactionType> transactionTypes) {
+    public Page<DepositResponse> listUserDeposits(String email, List<TransactionType> transactionTypes, Pageable pageable) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
 
@@ -60,11 +62,12 @@ public class DepositService {
             throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
         }
 
-        List<Deposit> deposits = (transactionTypes == null || transactionTypes.isEmpty())
-                ? depositRepository.findByUserId(user.getId())
-                : depositRepository.findByUserIdAndTransactionTypeIn(user.getId(), transactionTypes);
+        Page<Deposit> deposits = (transactionTypes == null || transactionTypes.isEmpty())
+                ? depositRepository.findByUserId(user.getId(), pageable)
+                : depositRepository.findByUserIdAndTransactionTypeIn(user.getId(), transactionTypes, pageable);
 
-        return deposits.stream().map(deposit -> {
+
+        return deposits.map(deposit -> {
             DepositResponse response = new DepositResponse();
             response.setId(deposit.getId());
             response.setAmount(deposit.getTransactionType() == TransactionType.EXIT
@@ -75,7 +78,7 @@ public class DepositService {
             response.setTransactionType(deposit.getTransactionType().toString());
             response.setFundBoxName(deposit.getFundBox() != null ? deposit.getFundBox().getName() : null);
             return response;
-        }).collect(Collectors.toList());
+        });
     }
 
     public DepositSummaryResponse getDepositSummary(String email) {
