@@ -1,6 +1,7 @@
 package com.finapp.backend.exception;
 
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ApiErrorCode {
@@ -41,5 +42,17 @@ public enum ApiErrorCode {
         this.code = code;
         this.title = title;
         this.description = description;
+    }
+
+    public HttpStatus getHttpStatus() {
+        return switch (this) {
+            case INVALID_CREDENTIALS, AUTH_EMAIL_NOT_FOUND, ACCOUNT_DEACTIVATED, EXPIRED_SESSION -> HttpStatus.UNAUTHORIZED;
+            case VALIDATION_ERROR, NAME_INVALID, PASSWORD_TOO_WEAK -> HttpStatus.BAD_REQUEST;
+            case ACCOUNT_LOCKED -> HttpStatus.FORBIDDEN;
+            case EMAIL_ALREADY_REGISTERED -> HttpStatus.CONFLICT;
+            case USER_NOT_FOUND, DEPOSIT_NOT_FOUND, FUND_BOX_NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case SERVICE_UNAVAILABLE -> HttpStatus.SERVICE_UNAVAILABLE;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
     }
 }

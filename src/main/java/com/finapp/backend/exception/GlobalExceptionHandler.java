@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
                 code.getTitle(),
                 code.getDescription()
         );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        return ResponseEntity.status(code.getHttpStatus()).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
                     customMessage != null ? customMessage : errorCode.getDescription()
             );
 
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+            return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
         }
 
         ApiErrorCode fallback = ApiErrorCode.VALIDATION_ERROR;
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
                 fallback.getTitle(),
                 fallback.getDescription()
         );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        return ResponseEntity.status(fallback.getHttpStatus()).body(response);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
                 "Constraint violation",
                 ex.getMessage()
         );
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(Exception.class)
