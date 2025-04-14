@@ -1,7 +1,7 @@
 package com.finapp.backend.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -53,21 +53,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleConstraintViolationException(ConstraintViolationException ex) {
+        ApiErrorCode code = ApiErrorCode.VALIDATION_ERROR;
         ApiErrorResponse response = new ApiErrorResponse(
-                ApiErrorCode.VALIDATION_ERROR.getCode(),
+                code.getCode(),
                 "Constraint violation",
                 ex.getMessage()
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(code.getHttpStatus()).body(response);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGenericException(Exception ex) {
+        ApiErrorCode code = ApiErrorCode.INTERNAL_ERROR;
         ApiErrorResponse response = new ApiErrorResponse(
-                ApiErrorCode.INTERNAL_ERROR.getCode(),
-                "Unexpected error",
+                code.getCode(),
+                code.getTitle(),
                 ex.getMessage()
         );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        return ResponseEntity.status(code.getHttpStatus()).body(response);
     }
 }
