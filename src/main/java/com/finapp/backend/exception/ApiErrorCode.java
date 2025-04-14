@@ -15,9 +15,12 @@ public enum ApiErrorCode {
     // auth
     EMAIL_ALREADY_REGISTERED("EMAIL_ALREADY_REGISTERED", "Email already registered", "An account with this email already exists."),
     INVALID_CREDENTIALS("INVALID_CREDENTIALS", "Invalid credentials", "Email or password is incorrect."),
-    USER_NOT_FOUND("USER_NOT_FOUND", "User not found", "The user was not found in the system."),
+    AUTH_EMAIL_NOT_FOUND("AUTH_EMAIL_NOT_FOUND", "Email not found", "The email provided was not found in the database."),
+    EXPIRED_SESSION("EXPIRED_SESSION", "Session expired", "Your session has expired. Please log in again to continue."),
+    ACCOUNT_LOCKED("ACCOUNT_LOCKED", "Account is locked", "Your account is locked due to too many failed login attempts"),
 
     // user
+    USER_NOT_FOUND("USER_NOT_FOUND", "User not found", "The user was not found in the database."),
     ACCOUNT_DEACTIVATED("ACCOUNT_DEACTIVATED", "Account is deactivated", "Your account is in the process of being deleted. Please log in again to reactivate your account."),
     SAME_NAME("SAME_NAME", "Name is the same", "The new name must be different from the current one"),
     SAME_PASSWORD("SAME_PASSWORD", "Password is the same", "The new password must be different from the current one"),
@@ -31,7 +34,8 @@ public enum ApiErrorCode {
     // generic
     VALIDATION_ERROR("VALIDATION_ERROR", "Validation failed", "One or more fields did not pass validation"),
     INTERNAL_ERROR("INTERNAL_ERROR", "Unexpected error", "An unexpected error occurred"),
-    FUND_BOX_NOT_FOUND("FUND_BOX_NOT_FOUND", "FundBox not found", "Unable to find requested FundBox");
+    FUND_BOX_NOT_FOUND("FUND_BOX_NOT_FOUND", "FundBox not found", "Unable to find requested FundBox"),
+    SERVICE_UNAVAILABLE("SERVICE_UNAVAILABLE", "Service unavailable", "The service is temporarily unavailable. Please try again later");
 
 
     private final String code;
