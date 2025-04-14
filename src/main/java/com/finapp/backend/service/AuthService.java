@@ -8,7 +8,6 @@ import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.model.User;
 import com.finapp.backend.repository.UserRepository;
 import com.finapp.backend.security.JwtUtil;
-import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -54,7 +53,7 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
 
         if (!user.getActive()) {
             user.setActive(true); // reactivates if it was in the process of being deleted
