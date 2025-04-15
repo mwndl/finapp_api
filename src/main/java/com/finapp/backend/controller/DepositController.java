@@ -41,13 +41,12 @@ public class DepositController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(depositService.listUserDeposits(
+        return depositService.listUserDeposits(
                 userDetails.getUsername(),
                 transactionType,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"))
-        ));
+        );
     }
-
 
     @GetMapping("/summary")
     public ResponseEntity<DepositSummaryResponse> getSummary(@AuthenticationPrincipal UserDetails userDetails) {

@@ -17,6 +17,7 @@ import com.finapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -51,15 +52,21 @@ public class DepositService {
         depositRepository.save(deposit);
     }
 
-    public Page<DepositResponse> listUserDeposits(String email, List<TransactionType> transactionTypes, Pageable pageable) {
+    public ResponseEntity<Page<DepositResponse>> listUserDeposits(String email, List<TransactionType> transactionTypes, Pageable pageable) {
         User user = getActiveUserByEmail(email);
 
         Page<Deposit> depositPage = (transactionTypes == null || transactionTypes.isEmpty())
                 ? depositRepository.findByUserId(user.getId(), pageable)
                 : depositRepository.findByUserIdAndTransactionTypeIn(user.getId(), transactionTypes, pageable);
 
-        return depositPage.map(this::mapToDepositResponse);
+        if (depositPage.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        Page<DepositResponse> depositResponses = depositPage.map(this::mapToDepositResponse);
+        return ResponseEntity.ok(depositResponses);
     }
+
 
     public DepositSummaryResponse getDepositSummary(String email) {
         User user = getActiveUserByEmail(email);
