@@ -22,4 +22,5 @@ public interface DepositRepository extends JpaRepository<Deposit, Long> {
     BigDecimal sumByUserIdAndTransactionType(@Param("userId") Long userId, @Param("transactionType") TransactionType transactionType);
 
     Page<Deposit> findByFundBoxId(Long fundBoxId, Pageable pageable);
+    List<Deposit> findByFundBoxId(Long fundBoxId);
 }
