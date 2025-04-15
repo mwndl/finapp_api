@@ -48,6 +48,15 @@ public class DepositController {
         );
     }
 
+    @GetMapping("/{depositId}")
+    public ResponseEntity<DepositResponse> getDepositById(
+            @PathVariable Long depositId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        DepositResponse deposit = depositService.getDepositById(depositId, userDetails.getUsername());
+        return ResponseEntity.ok(deposit);
+    }
+
     @GetMapping("/summary")
     public ResponseEntity<DepositSummaryResponse> getSummary(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(depositService.getDepositSummary(userDetails.getUsername()));

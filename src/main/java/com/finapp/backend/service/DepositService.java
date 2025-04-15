@@ -67,6 +67,17 @@ public class DepositService {
         return ResponseEntity.ok(depositResponses);
     }
 
+    public DepositResponse getDepositById(Long depositId, String email) {
+        User user = getActiveUserByEmail(email);
+
+        Deposit deposit = depositRepository.findById(depositId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
+
+        if (!deposit.getUser().getId().equals(user.getId()))
+            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND);
+
+        return mapToDepositResponse(deposit);
+    }
 
     public DepositSummaryResponse getDepositSummary(String email) {
         User user = getActiveUserByEmail(email);
@@ -89,8 +100,8 @@ public class DepositService {
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
-        if (!user.getEmail().equals(email)) {
-            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+        if (!deposit.getUser().getId().equals(user.getId())) {
+            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND);
         }
 
         updateAmount(deposit, request.getAmount());
@@ -103,15 +114,19 @@ public class DepositService {
         return mapToDepositResponse(deposit);
     }
 
+
     public void deleteDeposit(Long depositId, String email) {
         User user = getActiveUserByEmail(email);
+
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
-        if (!user.getEmail().equals(email))
-            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+
+        if (!deposit.getUser().getId().equals(user.getId()))
+            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND); // ff it exists and he's not the owner, returns 404 as well
 
         depositRepository.delete(deposit);
     }
+
 
 
     // aux methods
