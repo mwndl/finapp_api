@@ -100,15 +100,19 @@ public class DepositService {
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
-        if (!deposit.getUser().getId().equals(user.getId())) {
+        if (!deposit.getUser().getId().equals(user.getId()))
             throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND);
-        }
 
-        updateAmount(deposit, request.getAmount());
-        updateDate(deposit, request.getDate());
-        updateTransactionType(deposit, request.getTransactionType());
-        updateDescription(deposit, request.getDescription());
-        updateFundBox(deposit, request.getFundBoxId(), email);
+        if (request.getAmount() != null)
+            updateAmount(deposit, request.getAmount());
+        if (request.getDate() != null)
+            updateDate(deposit, request.getDate());
+        if (request.getTransactionType() != null)
+            updateTransactionType(deposit, request.getTransactionType());
+        if (request.getDescription() != null)
+            updateDescription(deposit, request.getDescription());
+        if (request.getFundBoxId() != null)
+            updateFundBox(deposit, request.getFundBoxId(), email);
 
         depositRepository.save(deposit);
         return mapToDepositResponse(deposit);

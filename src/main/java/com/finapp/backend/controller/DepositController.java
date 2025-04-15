@@ -62,7 +62,7 @@ public class DepositController {
         return ResponseEntity.ok(depositService.getDepositSummary(userDetails.getUsername()));
     }
 
-    @PatchMapping("/{depositId}")
+    @PutMapping("/{depositId}")
     public ResponseEntity<DepositResponse> updateDeposit(
             @PathVariable Long depositId,
             @RequestBody @Valid UpdateDepositRequest request,
