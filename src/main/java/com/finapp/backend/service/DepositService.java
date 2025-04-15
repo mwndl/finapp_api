@@ -208,7 +208,15 @@ public class DepositService {
         response.setDate(deposit.getDate());
         response.setDescription(deposit.getDescription());
         response.setTransactionType(deposit.getTransactionType().toString());
-        response.setFundBoxName(deposit.getFundBox() != null ? deposit.getFundBox().getName() : null);
+
+        if (deposit.getFundBox() != null) {
+            FundBoxInfo fundBoxInfo = new FundBoxInfo();
+            fundBoxInfo.setId(deposit.getFundBox().getId());
+            fundBoxInfo.setName(deposit.getFundBox().getName());
+            response.setFundBox(fundBoxInfo);
+        }
+
         return response;
     }
+
 }

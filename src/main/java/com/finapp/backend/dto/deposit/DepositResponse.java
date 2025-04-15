@@ -1,5 +1,6 @@
 package com.finapp.backend.dto.deposit;
 
+import com.finapp.backend.dto.fundbox.FundBoxInfo;
 import com.finapp.backend.model.enums.TransactionType;
 import lombok.Data;
 
@@ -12,6 +13,6 @@ public class DepositResponse {
     private BigDecimal amount;
     private LocalDate date;
     private String description;
-    private String fundBoxName;
+    private FundBoxInfo fundBox;
     private String TransactionType;
 }
