@@ -93,6 +93,17 @@ public class DepositService {
         return mapToDepositResponse(deposit);
     }
 
+    public void deleteDeposit(Long depositId, String email) {
+        Deposit deposit = depositRepository.findById(depositId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
+
+        if (!deposit.getUser().getEmail().equals(email)) {
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+        }
+
+        depositRepository.delete(deposit);
+    }
+
 
     // aux methods
     private void validateCreateRequest(CreateDepositRequest request) {

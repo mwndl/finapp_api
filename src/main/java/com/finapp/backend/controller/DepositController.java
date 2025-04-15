@@ -64,4 +64,12 @@ public class DepositController {
         return ResponseEntity.ok(updated);
     }
 
+    @DeleteMapping("/{depositId}")
+    public ResponseEntity<Void> deleteDeposit(
+            @PathVariable Long depositId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        depositService.deleteDeposit(depositId, userDetails.getUsername());
+        return ResponseEntity.noContent().build();
+    }
 }
