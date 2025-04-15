@@ -15,6 +15,7 @@ import com.finapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -42,15 +43,23 @@ public class FundboxService {
         return buildFundBoxResponse(saved, user);
     }
 
-    public Page<FundBoxResponse> listUserFundBoxes(String email, Pageable pageable) {
+    public ResponseEntity<Page<FundBoxResponse>> listUserFundBoxes(String email, Pageable pageable) {
         User user = getUserByEmail(email);
         checkUserStatus(user);
 
         Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
-        return fundBoxes.map(fb -> buildFundBoxResponse(fb, user));
+
+        if (fundBoxes.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Retorna 204 com corpo vazio
+        }
+
+        Page<FundBoxResponse> fundBoxResponses = fundBoxes.map(fb -> buildFundBoxResponse(fb, user));
+        return ResponseEntity.ok(fundBoxResponses); // Retorna 200 com o corpo
     }
 
+
     public FundBoxDetailsResponse getFundBoxDetails(Long fundBoxId, String email, Pageable pageable) {
+        System.out.println("fundBoxId 1: " + fundBoxId);
         User user = getUserByEmail(email);
         checkUserStatus(user);
 
@@ -136,15 +145,11 @@ public class FundboxService {
     }
 
     private FundBox getFundBoxById(Long fundBoxId, User user) {
-        FundBox fundBox = fundBoxRepository.findById(fundBoxId)
+        System.out.println("fundBoxId: " + fundBoxId);
+        return fundBoxRepository.findByIdAndOwnerId(fundBoxId, user.getId())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
-
-        if (!fundBox.getOwner().getId().equals(user.getId())) {
-            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
-        }
-
-        return fundBox;
     }
+
 
     private BigDecimal calculateBalance(Long fundBoxId) {
         BigDecimal entryTotal = Optional.ofNullable(

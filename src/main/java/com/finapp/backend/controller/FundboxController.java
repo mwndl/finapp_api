@@ -40,9 +40,10 @@ public class FundboxController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("targetDate").ascending());
-        Page<FundBoxResponse> result = fundBoxService.listUserFundBoxes(userDetails.getUsername(), pageable);
-        return ResponseEntity.ok(result);
+        return fundBoxService.listUserFundBoxes(userDetails.getUsername(), pageable);
     }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<FundBoxDetailsResponse> getFundBoxById(
