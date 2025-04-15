@@ -5,13 +5,15 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ApiErrorCode {
-
     // 400 - Bad Request
     PASSWORD_TOO_WEAK(400, "PASSWORD_TOO_WEAK", "Password does not meet complexity requirements", "Password must contain at least 8 characters, including uppercase, lowercase, number and special character"),
     NAME_INVALID(400, "NAME_INVALID", "Name format is invalid", "Name must contain at least two words with only letters"),
     SAME_NAME(400, "SAME_NAME", "Name is the same", "The new name must be different from the current one"),
     SAME_PASSWORD(400, "SAME_PASSWORD", "Password is the same", "The new password must be different from the current one"),
 
+    INVALID_DESCRIPTION(400, "INVALID_DESCRIPTION", "Invalid description", "The description must be between 1 and 255 characters."),
+    INVALID_TRANSACTION_TYPE(400, "INVALID_TRANSACTION_TYPE", "Invalid transaction type", "The specified transaction type is not recognized. Use ENTRY or EXIT." ),
+    INVALID_DATE_FUTURE(400, "INVALID_DATE_FUTURE", "Date is invalid", "The date cannot be in the future"),
     INVALID_AMOUNT(400, "INVALID_AMOUNT", "Invalid amount", "The amount must be greater than 0"),
     MISSING_AMOUNT(400, "MISSING_AMOUNT", "Amount is required", "The amount must be provided and greater than 0"),
     MISSING_DATE(400, "MISSING_DATE", "Date is required", "The date must be provided"),
@@ -23,6 +25,7 @@ public enum ApiErrorCode {
     EXPIRED_SESSION(401, "EXPIRED_SESSION", "Session expired", "Your session has expired. Please log in again to continue."),
     INVALID_CREDENTIALS(401, "INVALID_CREDENTIALS", "Invalid credentials", "Email or password is incorrect."),
     ACCOUNT_DEACTIVATED(401, "ACCOUNT_DEACTIVATED", "Account is deactivated", "Your account is in the process of being deleted. Please log in again to reactivate your account."),
+    UNAUTHORIZED_ACCESS(401, "UNAUTHORIZED_ACCESS", "Unauthorized access", "You are not authorized to access this resource."),
 
     // 403 - Forbidden
     ACCOUNT_LOCKED(403, "ACCOUNT_LOCKED", "Account is locked", "Your account is locked due to too many failed login attempts"),
