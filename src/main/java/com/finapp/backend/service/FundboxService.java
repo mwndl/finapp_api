@@ -50,16 +50,15 @@ public class FundboxService {
         Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
 
         if (fundBoxes.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Retorna 204 com corpo vazio
+            return ResponseEntity.noContent().build();
         }
 
         Page<FundBoxResponse> fundBoxResponses = fundBoxes.map(fb -> buildFundBoxResponse(fb, user));
-        return ResponseEntity.ok(fundBoxResponses); // Retorna 200 com o corpo
+        return ResponseEntity.ok(fundBoxResponses);
     }
 
 
     public FundBoxDetailsResponse getFundBoxDetails(Long fundBoxId, String email, Pageable pageable) {
-        System.out.println("fundBoxId 1: " + fundBoxId);
         User user = getUserByEmail(email);
         checkUserStatus(user);
 
@@ -145,7 +144,6 @@ public class FundboxService {
     }
 
     private FundBox getFundBoxById(Long fundBoxId, User user) {
-        System.out.println("fundBoxId: " + fundBoxId);
         return fundBoxRepository.findByIdAndOwnerId(fundBoxId, user.getId())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
     }
