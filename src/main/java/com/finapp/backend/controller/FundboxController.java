@@ -3,6 +3,7 @@ package com.finapp.backend.controller;
 import com.finapp.backend.dto.fundbox.CreateFundBoxRequest;
 import com.finapp.backend.dto.fundbox.FundBoxDetailsResponse;
 import com.finapp.backend.dto.fundbox.FundBoxResponse;
+import com.finapp.backend.dto.fundbox.UpdateFundBoxRequest;
 import com.finapp.backend.service.FundboxService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,12 +49,32 @@ public class FundboxController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal(expression = "username") String email
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
+        String email = userDetails.getUsername();
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
         FundBoxDetailsResponse response = fundBoxService.getFundBoxDetails(id, email, pageable);
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<FundBoxResponse> updateFundBox(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateFundBoxRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        String email = userDetails.getUsername();
+        FundBoxResponse updatedFundBox = fundBoxService.updateFundBox(id, email, request);
+        return ResponseEntity.ok(updatedFundBox);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteFundBox(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        fundBoxService.deleteFundBox(id, userDetails.getUsername());
+        return ResponseEntity.noContent().build(); // HTTP 204
+    }
 
 }

@@ -68,8 +68,33 @@ public class FundboxService {
         );
     }
 
-    // aux methods
+    public FundBoxResponse updateFundBox(Long fundBoxId, String email, UpdateFundBoxRequest request) {
+        FundBox fundBox = getFundBoxById(fundBoxId, getUserByEmail(email));
 
+        if (request.getName() != null && !request.getName().trim().isEmpty())
+            fundBox.setName(request.getName().trim());
+        if (request.getFinancialGoal() != null)
+            fundBox.setFinancialGoal(request.getFinancialGoal());
+        if (request.getTargetDate() != null)
+            fundBox.setTargetDate(request.getTargetDate());
+
+        FundBox savedFundBox = fundBoxRepository.save(fundBox);
+        return buildFundBoxResponse(savedFundBox, fundBox.getOwner());
+    }
+
+    public void deleteFundBox(Long fundBoxId, String email) {
+        User user = getUserByEmail(email);
+        FundBox fundBox = getFundBoxById(fundBoxId, user);
+
+        depositRepository.findByFundBoxId(fundBoxId).forEach(deposit -> {
+            deposit.setFundBox(null);
+            depositRepository.save(deposit);
+        });
+
+        fundBoxRepository.delete(fundBox);
+    }
+
+    // aux methods
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
