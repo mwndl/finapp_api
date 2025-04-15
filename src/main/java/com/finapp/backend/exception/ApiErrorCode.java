@@ -36,6 +36,7 @@ public enum ApiErrorCode {
     USER_NOT_FOUND(404, "USER_NOT_FOUND", "User not found", "The user was not found in the database."),
 
     // 409 - Conflict
+    FUND_BOX_NAME_ALREADY_EXISTS(409, "FUND_BOX_NAME_ALREADY_EXISTS", "Fundbox name must be unique", "The name provided is already in use, each fundbox must have a unique name per user"),
     EMAIL_ALREADY_REGISTERED(409, "EMAIL_ALREADY_REGISTERED", "Email already registered", "An account with this email already exists."),
 
     // 429 - Too Many Requests
