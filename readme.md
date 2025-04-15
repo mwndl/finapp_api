@@ -22,7 +22,7 @@ Finapp is a financial management application that allows users to organize their
 
 ## Technologies
 
--   Java 17
+-   Java 21
 
 -   Spring Boot
 
