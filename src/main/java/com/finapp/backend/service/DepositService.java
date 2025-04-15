@@ -4,6 +4,7 @@ import com.finapp.backend.dto.deposit.CreateDepositRequest;
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.DepositSummaryResponse;
 import com.finapp.backend.dto.deposit.UpdateDepositRequest;
+import com.finapp.backend.dto.fundbox.FundBoxInfo;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
@@ -35,7 +36,10 @@ public class DepositService {
         User user = getActiveUserByEmail(email);
         validateCreateRequest(request);
 
-        FundBox fundBox = findAndValidateFundBox(request.getFundBoxId(), email);
+        FundBox fundBox = null;
+        if (request.getFundBoxId() != null) {
+            fundBox = findAndValidateFundBox(request.getFundBoxId(), email);
+        }
 
         Deposit deposit = new Deposit();
         deposit.setAmount(request.getAmount());
@@ -138,7 +142,8 @@ public class DepositService {
     }
 
     private FundBox findAndValidateFundBox(Long fundBoxId, String email) {
-        if (fundBoxId == null) return null;
+        if (fundBoxId == null)
+            throw new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND);
 
         FundBox fundBox = fundBoxRepository.findById(fundBoxId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
