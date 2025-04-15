@@ -44,17 +44,18 @@ public class FundboxService {
 
     public Page<FundBoxResponse> listUserFundBoxes(String email, Pageable pageable) {
         User user = getUserByEmail(email);
-        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
+        checkUserStatus(user);
 
+        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
         return fundBoxes.map(fb -> buildFundBoxResponse(fb, user));
     }
 
     public FundBoxDetailsResponse getFundBoxDetails(Long fundBoxId, String email, Pageable pageable) {
         User user = getUserByEmail(email);
+        checkUserStatus(user);
+
         FundBox fundBox = getFundBoxById(fundBoxId, user);
-
         BigDecimal balance = calculateBalance(fundBoxId);
-
         Page<DepositResponse> depositResponses = getDepositResponses(fundBoxId, pageable);
 
         return new FundBoxDetailsResponse(
@@ -69,7 +70,10 @@ public class FundboxService {
     }
 
     public FundBoxResponse updateFundBox(Long fundBoxId, String email, UpdateFundBoxRequest request) {
-        FundBox fundBox = getFundBoxById(fundBoxId, getUserByEmail(email));
+        User user = getUserByEmail(email);
+        checkUserStatus(user);
+
+        FundBox fundBox = getFundBoxById(fundBoxId, user);
 
         if (request.getName() != null && !request.getName().trim().isEmpty())
             fundBox.setName(request.getName().trim());
@@ -84,6 +88,8 @@ public class FundboxService {
 
     public void deleteFundBox(Long fundBoxId, String email) {
         User user = getUserByEmail(email);
+        checkUserStatus(user);
+
         FundBox fundBox = getFundBoxById(fundBoxId, user);
 
         depositRepository.findByFundBoxId(fundBoxId).forEach(deposit -> {

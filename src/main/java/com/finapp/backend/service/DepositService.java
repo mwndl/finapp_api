@@ -37,10 +37,8 @@ public class DepositService {
         validateCreateRequest(request);
 
         FundBox fundBox = null;
-        if (request.getFundBoxId() != null) {
+        if (request.getFundBoxId() != null)
             fundBox = findAndValidateFundBox(request.getFundBoxId(), email);
-        }
-
         Deposit deposit = new Deposit();
         deposit.setAmount(request.getAmount());
         deposit.setDate(request.getDate());
@@ -80,10 +78,11 @@ public class DepositService {
     }
 
     public DepositResponse updateDeposit(Long depositId, String email, UpdateDepositRequest request) {
+        User user = getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
-        if (!deposit.getUser().getEmail().equals(email)) {
+        if (!user.getEmail().equals(email)) {
             throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
         }
 
@@ -98,12 +97,11 @@ public class DepositService {
     }
 
     public void deleteDeposit(Long depositId, String email) {
+        User user = getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
-
-        if (!deposit.getUser().getEmail().equals(email)) {
+        if (!user.getEmail().equals(email))
             throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
-        }
 
         depositRepository.delete(deposit);
     }
