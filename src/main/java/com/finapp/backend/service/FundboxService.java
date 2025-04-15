@@ -1,12 +1,15 @@
 package com.finapp.backend.service;
 
-import com.finapp.backend.dto.fundbox.CreateFundBoxRequest;
-import com.finapp.backend.dto.fundbox.FundBoxResponse;
-import com.finapp.backend.dto.fundbox.OwnerResponse;
+import com.finapp.backend.dto.deposit.DepositResponse;
+import com.finapp.backend.dto.fundbox.*;
+import com.finapp.backend.dto.deposit.FundBoxInfo;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
+import com.finapp.backend.model.Deposit;
 import com.finapp.backend.model.FundBox;
 import com.finapp.backend.model.User;
+import com.finapp.backend.model.enums.TransactionType;
+import com.finapp.backend.repository.DepositRepository;
 import com.finapp.backend.repository.FundBoxRepository;
 import com.finapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,62 +17,94 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class FundboxService {
 
     private final FundBoxRepository fundBoxRepository;
     private final UserRepository userRepository;
+    private final DepositRepository depositRepository;
 
     public FundBoxResponse createFundBox(String email, CreateFundBoxRequest request) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+        User user = getUserByEmail(email);
+        checkUserStatus(user);
 
-        if (!Boolean.TRUE.equals(user.getActive())) {
-            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
-        }
-
-        boolean exists = fundBoxRepository.existsByOwnerIdAndName(user.getId(), request.name().trim());
-        if (exists) {
+        if (fundBoxExists(user.getId(), request.name())) {
             throw new ApiException(ApiErrorCode.FUND_BOX_NAME_ALREADY_EXISTS);
         }
 
+        FundBox fundBox = buildFundBox(request, user);
+        FundBox saved = fundBoxRepository.save(fundBox);
+
+        return buildFundBoxResponse(saved, user);
+    }
+
+    public Page<FundBoxResponse> listUserFundBoxes(String email, Pageable pageable) {
+        User user = getUserByEmail(email);
+        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
+
+        return fundBoxes.map(fb -> buildFundBoxResponse(fb, user));
+    }
+
+    public FundBoxDetailsResponse getFundBoxDetails(Long fundBoxId, String email, Pageable pageable) {
+        User user = getUserByEmail(email);
+        FundBox fundBox = getFundBoxById(fundBoxId, user);
+
+        BigDecimal balance = calculateBalance(fundBoxId);
+
+        Page<DepositResponse> depositResponses = getDepositResponses(fundBoxId, pageable);
+
+        return new FundBoxDetailsResponse(
+                fundBox.getId(),
+                fundBox.getName(),
+                fundBox.getFinancialGoal(),
+                fundBox.getTargetDate(),
+                new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName()),
+                balance,
+                depositResponses
+        );
+    }
+
+    // aux methods
+
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+    }
+
+    private void checkUserStatus(User user) {
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
+        }
+    }
+
+    private boolean fundBoxExists(Long userId, String name) {
+        return fundBoxRepository.existsByOwnerIdAndName(userId, name.trim());
+    }
+
+    private FundBox buildFundBox(CreateFundBoxRequest request, User user) {
         FundBox fundBox = new FundBox();
         fundBox.setName(request.name().trim());
         fundBox.setFinancialGoal(request.financialGoal());
         fundBox.setTargetDate(request.targetDate());
         fundBox.setOwner(user);
+        return fundBox;
+    }
 
-        FundBox saved = fundBoxRepository.save(fundBox);
-
+    private FundBoxResponse buildFundBoxResponse(FundBox fundBox, User user) {
         return new FundBoxResponse(
-                saved.getId(),
-                saved.getName(),
-                saved.getFinancialGoal(),
-                saved.getTargetDate(),
+                fundBox.getId(),
+                fundBox.getName(),
+                fundBox.getFinancialGoal(),
+                fundBox.getTargetDate(),
                 new OwnerResponse(user.getId(), user.getName())
         );
     }
 
-    public Page<FundBoxResponse> listUserFundBoxes(String email, Pageable pageable) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-
-        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
-
-        return fundBoxes.map(fb -> new FundBoxResponse(
-                fb.getId(),
-                fb.getName(),
-                fb.getFinancialGoal(),
-                fb.getTargetDate(),
-                new OwnerResponse(user.getId(), user.getName())
-        ));
-    }
-
-    public FundBoxResponse getFundBoxById(Long fundBoxId, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-
+    private FundBox getFundBoxById(Long fundBoxId, User user) {
         FundBox fundBox = fundBoxRepository.findById(fundBoxId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
 
@@ -77,15 +112,40 @@ public class FundboxService {
             throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
         }
 
-        return new FundBoxResponse(
-                fundBox.getId(),
-                fundBox.getName(),
-                fundBox.getFinancialGoal(),
-                fundBox.getTargetDate(),
-                new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName())
-        );
+        return fundBox;
     }
 
+    private BigDecimal calculateBalance(Long fundBoxId) {
+        BigDecimal entryTotal = Optional.ofNullable(
+                depositRepository.sumByFundBoxIdAndTransactionType(fundBoxId, TransactionType.ENTRY)
+        ).orElse(BigDecimal.ZERO);
 
+        BigDecimal exitTotal = Optional.ofNullable(
+                depositRepository.sumByFundBoxIdAndTransactionType(fundBoxId, TransactionType.EXIT)
+        ).orElse(BigDecimal.ZERO);
 
+        return entryTotal.subtract(exitTotal);
+    }
+
+    private Page<DepositResponse> getDepositResponses(Long fundBoxId, Pageable pageable) {
+        Page<Deposit> depositPage = depositRepository.findByFundBoxId(fundBoxId, pageable);
+
+        return depositPage.map(deposit -> {
+            com.finapp.backend.dto.deposit.FundBoxInfo fundBoxInfo = new FundBoxInfo(
+                    deposit.getFundBox().getId(),
+                    deposit.getFundBox().getName()
+            );
+
+            return new DepositResponse(
+                    deposit.getId(),
+                    deposit.getTransactionType() == TransactionType.EXIT
+                            ? deposit.getAmount().negate()
+                            : deposit.getAmount(),
+                    deposit.getDate(),
+                    deposit.getDescription(),
+                    fundBoxInfo,
+                    deposit.getTransactionType().toString()
+            );
+        });
+    }
 }
