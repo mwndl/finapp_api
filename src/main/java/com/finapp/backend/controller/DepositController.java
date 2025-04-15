@@ -31,7 +31,7 @@ public class DepositController {
             @Valid @RequestBody CreateDepositRequest request
     ) {
         depositService.createDeposit(userDetails.getUsername(), request);
-        return ResponseEntity.ok("Deposit created successfully");
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping
