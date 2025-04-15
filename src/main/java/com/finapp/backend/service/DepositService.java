@@ -4,7 +4,7 @@ import com.finapp.backend.dto.deposit.CreateDepositRequest;
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.DepositSummaryResponse;
 import com.finapp.backend.dto.deposit.UpdateDepositRequest;
-import com.finapp.backend.dto.fundbox.FundBoxInfo;
+import com.finapp.backend.dto.deposit.FundBoxInfo;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
@@ -91,7 +91,7 @@ public class DepositService {
         updateDate(deposit, request.getDate());
         updateTransactionType(deposit, request.getTransactionType());
         updateDescription(deposit, request.getDescription());
-        updateFundBox(deposit, request.getFundBoxId(), email, deposit.getFundBox());
+        updateFundBox(deposit, request.getFundBoxId(), email);
 
         depositRepository.save(deposit);
         return mapToDepositResponse(deposit);
@@ -182,9 +182,14 @@ public class DepositService {
         deposit.setDescription(description.trim());
     }
 
-    private void updateFundBox(Deposit deposit, Long fundBoxId, String email, FundBox currentFundBox) {
-        if (fundBoxId == null) return;
-        if (currentFundBox != null && currentFundBox.getId().equals(fundBoxId)) return;
+    private void updateFundBox(Deposit deposit, Long fundBoxId, String email) {
+        if (fundBoxId == null) {
+            deposit.setFundBox(null);
+            return;
+        }
+
+        if (deposit.getFundBox() != null && deposit.getFundBox().getId().equals(fundBoxId))
+            return;
 
         FundBox fundBox = fundBoxRepository.findById(fundBoxId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
@@ -205,23 +210,23 @@ public class DepositService {
     }
 
     private DepositResponse mapToDepositResponse(Deposit deposit) {
-        DepositResponse response = new DepositResponse();
-        response.setId(deposit.getId());
-        response.setAmount(deposit.getTransactionType() == TransactionType.EXIT
-                ? deposit.getAmount().negate()
-                : deposit.getAmount());
-        response.setDate(deposit.getDate());
-        response.setDescription(deposit.getDescription());
-        response.setTransactionType(deposit.getTransactionType().toString());
-
+        FundBoxInfo fundBoxInfo = null;
         if (deposit.getFundBox() != null) {
-            FundBoxInfo fundBoxInfo = new FundBoxInfo();
-            fundBoxInfo.setId(deposit.getFundBox().getId());
-            fundBoxInfo.setName(deposit.getFundBox().getName());
-            response.setFundBox(fundBoxInfo);
+            fundBoxInfo = new FundBoxInfo(
+                    deposit.getFundBox().getId(),
+                    deposit.getFundBox().getName()
+            );
         }
-
-        return response;
+        return new DepositResponse(
+                deposit.getId(),
+                deposit.getTransactionType() == TransactionType.EXIT
+                        ? deposit.getAmount().negate()
+                        : deposit.getAmount(),
+                deposit.getDate(),
+                deposit.getDescription(),
+                fundBoxInfo,
+                deposit.getTransactionType().toString()
+        );
     }
 
 }

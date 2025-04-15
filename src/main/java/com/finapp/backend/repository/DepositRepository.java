@@ -15,8 +15,11 @@ public interface DepositRepository extends JpaRepository<Deposit, Long> {
     Page<Deposit> findByUserId(Long userId, Pageable pageable);
     Page<Deposit> findByUserIdAndTransactionTypeIn(Long userId, List<TransactionType> transactionTypes, Pageable pageable);
 
-    @Query("SELECT SUM(d.amount) FROM Deposit d WHERE d.user.id = :userId AND d.transactionType = :type")
-    BigDecimal sumByUserIdAndTransactionType(@Param("userId") Long userId, @Param("type") TransactionType type);
+    @Query("SELECT COALESCE(SUM(d.amount), 0) FROM Deposit d WHERE d.fundBox.id = :fundBoxId AND d.transactionType = :transactionType")
+    BigDecimal sumByFundBoxIdAndTransactionType(@Param("fundBoxId") Long fundBoxId, @Param("transactionType") TransactionType transactionType);
 
-    List<Deposit> findByFundBoxId(Long fundBoxId);
+    @Query("SELECT COALESCE(SUM(d.amount), 0) FROM Deposit d WHERE d.user.id = :userId AND d.transactionType = :transactionType")
+    BigDecimal sumByUserIdAndTransactionType(@Param("userId") Long userId, @Param("transactionType") TransactionType transactionType);
+
+    Page<Deposit> findByFundBoxId(Long fundBoxId, Pageable pageable);
 }

@@ -1,8 +1,8 @@
 package com.finapp.backend.controller;
 
 import com.finapp.backend.dto.fundbox.CreateFundBoxRequest;
+import com.finapp.backend.dto.fundbox.FundBoxDetailsResponse;
 import com.finapp.backend.dto.fundbox.FundBoxResponse;
-import com.finapp.backend.model.FundBox;
 import com.finapp.backend.service.FundboxService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,13 +43,16 @@ public class FundboxController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{fundBoxId}")
-    public ResponseEntity<FundBoxResponse> getFundBoxById(
-            @PathVariable Long fundBoxId,
-            @AuthenticationPrincipal UserDetails userDetails
+    @GetMapping("/{id}")
+    public ResponseEntity<FundBoxDetailsResponse> getFundBoxById(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal(expression = "username") String email
     ) {
-        FundBoxResponse fundBox = fundBoxService.getFundBoxById(fundBoxId, userDetails.getUsername());
-        return ResponseEntity.ok(fundBox);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
+        FundBoxDetailsResponse response = fundBoxService.getFundBoxDetails(id, email, pageable);
+        return ResponseEntity.ok(response);
     }
 
 
