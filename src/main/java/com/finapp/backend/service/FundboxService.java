@@ -7,6 +7,7 @@ import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
 import com.finapp.backend.model.FundBox;
+import com.finapp.backend.model.FundBoxCollaborator;
 import com.finapp.backend.model.User;
 import com.finapp.backend.model.enums.TransactionType;
 import com.finapp.backend.repository.DepositRepository;
@@ -19,7 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,13 +50,13 @@ public class FundboxService {
         User user = getUserByEmail(email);
         checkUserStatus(user);
 
-        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
+        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerIdOrCollaboratorsContaining(user.getId(), pageable);
 
         if (fundBoxes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        Page<FundBoxResponse> fundBoxResponses = fundBoxes.map(fb -> buildFundBoxResponse(fb, user));
+        Page<FundBoxResponse> fundBoxResponses = fundBoxes.map(fb -> buildFundBoxResponse(fb, fb.getOwner()));
         return ResponseEntity.ok(fundBoxResponses);
     }
 
@@ -66,6 +69,14 @@ public class FundboxService {
         BigDecimal balance = calculateBalance(fundBoxId);
         Page<DepositResponse> depositResponses = getDepositResponses(fundBoxId, pageable);
 
+        List<CollaboratorResponse> collaborators = fundBox.getCollaborators().stream()
+                .map(collaborator -> new CollaboratorResponse(
+                        collaborator.getUser().getId(),
+                        collaborator.getUser().getName(),
+                        collaborator.getJoinedAt()
+                ))
+                .collect(Collectors.toList());
+
         return new FundBoxDetailsResponse(
                 fundBox.getId(),
                 fundBox.getName(),
@@ -73,7 +84,8 @@ public class FundboxService {
                 fundBox.getTargetDate(),
                 new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName()),
                 balance,
-                depositResponses
+                depositResponses,
+                collaborators
         );
     }
 
@@ -108,7 +120,75 @@ public class FundboxService {
         fundBoxRepository.delete(fundBox);
     }
 
+    public void addCollaborator(Long fundBoxId, String email, Long collaboratorId) {
+        User owner = getUserByEmail(email);
+        checkUserStatus(owner);
+
+        FundBox fundBox = getFundBoxById(fundBoxId, owner);
+
+        if (fundBox.getOwner().getId().equals(collaboratorId))
+            throw new ApiException(ApiErrorCode.COLLABORATOR_CANNOT_BE_OWNER);
+
+        User collaborator = getUserById(collaboratorId);
+        checkUserStatus(collaborator);
+
+        boolean collaboratorExists = fundBox.getCollaborators().stream()
+                .anyMatch(c -> c.getUser().getId().equals(collaboratorId));
+
+        if (collaboratorExists)
+            throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_EXISTS);
+
+        FundBoxCollaborator relation = new FundBoxCollaborator();
+        relation.setFundBox(fundBox);
+        relation.setUser(collaborator);
+
+        fundBox.getCollaborators().add(relation);
+
+        fundBoxRepository.save(fundBox);
+    }
+
+
+
+    public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
+        User owner = getUserByEmail(email);
+        checkUserStatus(owner);
+        FundBox fundBox = getFundBoxById(fundBoxId, owner);
+        User collaborator = getUserById(collaboratorId);
+
+        boolean removed = fundBox.getCollaborators().removeIf(c -> c.getUser().getId().equals(collaborator.getId()));
+        if (!removed)
+            throw new ApiException(ApiErrorCode.COLLABORATOR_NOT_FOUND);
+
+        depositRepository.unsetFundBoxForUserDeposits(collaborator.getId(), fundBoxId);
+
+        fundBoxRepository.save(fundBox);
+    }
+
+    public void leaveFundBox(Long fundBoxId, String email) {
+        User collaborator = getUserByEmail(email);
+        checkUserStatus(collaborator);
+        FundBox fundBox = getFundBoxById(fundBoxId, collaborator);
+
+        if (fundBox.getOwner().getId().equals(collaborator.getId()))
+            throw new ApiException(ApiErrorCode.CANNOT_LEAVE_AS_OWNER);
+
+        boolean removed = fundBox.getCollaborators().removeIf(c -> c.getUser().getId().equals(collaborator.getId()));
+        if (!removed)
+            throw new ApiException(ApiErrorCode.COLLABORATOR_NOT_FOUND);
+
+        depositRepository.unsetFundBoxForUserDeposits(collaborator.getId(), fundBoxId);
+
+        fundBoxRepository.save(fundBox);
+    }
+
+
+
     // aux methods
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+    }
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
@@ -144,7 +224,7 @@ public class FundboxService {
     }
 
     private FundBox getFundBoxById(Long fundBoxId, User user) {
-        return fundBoxRepository.findByIdAndOwnerId(fundBoxId, user.getId())
+        return fundBoxRepository.findByIdAndUserIsOwnerOrCollaborator(fundBoxId, user.getId())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
     }
 
@@ -170,6 +250,14 @@ public class FundboxService {
                     deposit.getFundBox().getName()
             );
 
+            OwnerResponse ownerInfo = null;
+            if (deposit.getUser() != null) {
+                ownerInfo = new OwnerResponse(
+                        deposit.getUser().getId(),
+                        deposit.getUser().getName()
+                );
+            }
+
             return new DepositResponse(
                     deposit.getId(),
                     deposit.getTransactionType() == TransactionType.EXIT
@@ -178,8 +266,10 @@ public class FundboxService {
                     deposit.getDate(),
                     deposit.getDescription(),
                     fundBoxInfo,
-                    deposit.getTransactionType().toString()
+                    deposit.getTransactionType().toString(),
+                    ownerInfo
             );
         });
     }
+
 }

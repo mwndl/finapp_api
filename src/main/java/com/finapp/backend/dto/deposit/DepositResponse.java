@@ -1,5 +1,6 @@
 package com.finapp.backend.dto.deposit;
 
+import com.finapp.backend.dto.fundbox.OwnerResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,5 +16,5 @@ public class DepositResponse {
     private String description;
     private FundBoxInfo fundBox;
     private String TransactionType;
-
+    private OwnerResponse owner;
 }

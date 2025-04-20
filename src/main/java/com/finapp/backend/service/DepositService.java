@@ -5,6 +5,7 @@ import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.DepositSummaryResponse;
 import com.finapp.backend.dto.deposit.UpdateDepositRequest;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
+import com.finapp.backend.dto.fundbox.OwnerResponse;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
@@ -73,11 +74,21 @@ public class DepositService {
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
-        if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND);
+        FundBox fundBox = deposit.getFundBox();
+        if (fundBox == null) {
+            if (!deposit.getUser().getId().equals(user.getId()))
+                throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+        } else {
+            if (!fundBox.getOwner().getId().equals(user.getId()) &&
+                    fundBox.getCollaborators().stream().noneMatch(collaborator -> collaborator.getUser().getId().equals(user.getId()))) {
+                throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+            }
+        }
 
         return mapToDepositResponse(deposit);
     }
+
+
 
     public DepositSummaryResponse getDepositSummary(String email) {
         User user = getActiveUserByEmail(email);
@@ -101,7 +112,7 @@ public class DepositService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
         if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND);
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         if (request.getAmount() != null)
             updateAmount(deposit, request.getAmount());
@@ -126,7 +137,7 @@ public class DepositService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
         if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND); // ff it exists and he's not the owner, returns 404 as well
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         depositRepository.delete(deposit);
     }
@@ -172,7 +183,10 @@ public class DepositService {
         FundBox fundBox = fundBoxRepository.findById(fundBoxId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
 
-        if (!fundBox.getOwner().getEmail().equals(email))
+        boolean isOwnerOrCollaborator = fundBox.getOwner().getEmail().equals(email) ||
+                fundBox.getCollaborators().stream().anyMatch(collaborator -> collaborator.getUser().getEmail().equals(email));
+
+        if (!isOwnerOrCollaborator)
             throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         return fundBox;
@@ -218,7 +232,11 @@ public class DepositService {
         FundBox fundBox = fundBoxRepository.findById(fundBoxId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
 
-        if (!fundBox.getOwner().getEmail().equals(email))
+        boolean isOwner = fundBox.getOwner().getEmail().equals(email);
+        boolean isCollaborator = fundBox.getCollaborators().stream()
+                .anyMatch(collaborator -> collaborator.getUser().getEmail().equals(email));
+
+        if (!isOwner && !isCollaborator)
             throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         deposit.setFundBox(fundBox);
@@ -235,12 +253,22 @@ public class DepositService {
 
     private DepositResponse mapToDepositResponse(Deposit deposit) {
         FundBoxInfo fundBoxInfo = null;
+        OwnerResponse ownerResponse = null;
+
         if (deposit.getFundBox() != null) {
             fundBoxInfo = new FundBoxInfo(
                     deposit.getFundBox().getId(),
                     deposit.getFundBox().getName()
             );
         }
+
+        if (deposit.getUser() != null) {
+            ownerResponse = new OwnerResponse(
+                    deposit.getUser().getId(),
+                    deposit.getUser().getName()
+            );
+        }
+
         return new DepositResponse(
                 deposit.getId(),
                 deposit.getTransactionType() == TransactionType.EXIT
@@ -249,8 +277,11 @@ public class DepositService {
                 deposit.getDate(),
                 deposit.getDescription(),
                 fundBoxInfo,
-                deposit.getTransactionType().toString()
+                deposit.getTransactionType().toString(),
+                ownerResponse
         );
     }
+
+
 
 }

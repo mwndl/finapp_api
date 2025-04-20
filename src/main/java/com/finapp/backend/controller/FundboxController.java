@@ -78,4 +78,35 @@ public class FundboxController {
         return ResponseEntity.noContent().build(); // HTTP 204
     }
 
+    @PostMapping("/{id}/collaborators/{userId}")
+    public ResponseEntity<Void> addCollaborator(
+            @PathVariable Long id,
+            @PathVariable Long userId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        fundBoxService.addCollaborator(id, userDetails.getUsername(), userId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @DeleteMapping("/{id}/collaborators/{userId}")
+    public ResponseEntity<Void> removeCollaborator(
+            @PathVariable Long id,
+            @PathVariable Long userId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        fundBoxService.removeCollaborator(id, userDetails.getUsername(), userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}/leave")
+    public ResponseEntity<Void> leaveFundBox(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        fundBoxService.leaveFundBox(id, userDetails.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 }
