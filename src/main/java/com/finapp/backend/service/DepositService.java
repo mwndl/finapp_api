@@ -74,7 +74,7 @@ public class DepositService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
         if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND);
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         return mapToDepositResponse(deposit);
     }
@@ -101,7 +101,7 @@ public class DepositService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
         if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND);
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         if (request.getAmount() != null)
             updateAmount(deposit, request.getAmount());
@@ -126,7 +126,7 @@ public class DepositService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
         if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND); // ff it exists and he's not the owner, returns 404 as well
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         depositRepository.delete(deposit);
     }
