@@ -161,7 +161,6 @@ public class FundboxService {
     }
 
 
-
     // aux methods
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
@@ -229,6 +228,14 @@ public class FundboxService {
                     deposit.getFundBox().getName()
             );
 
+            OwnerResponse ownerInfo = null;
+            if (deposit.getUser() != null) {
+                ownerInfo = new OwnerResponse(
+                        deposit.getUser().getId(),
+                        deposit.getUser().getName()
+                );
+            }
+
             return new DepositResponse(
                     deposit.getId(),
                     deposit.getTransactionType() == TransactionType.EXIT
@@ -237,8 +244,10 @@ public class FundboxService {
                     deposit.getDate(),
                     deposit.getDescription(),
                     fundBoxInfo,
-                    deposit.getTransactionType().toString()
+                    deposit.getTransactionType().toString(),
+                    ownerInfo
             );
         });
     }
+
 }
