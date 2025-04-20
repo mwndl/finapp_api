@@ -73,11 +73,21 @@ public class DepositService {
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 
-        if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+        FundBox fundBox = deposit.getFundBox();
+        if (fundBox == null) {
+            if (!deposit.getUser().getId().equals(user.getId()))
+                throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+        } else {
+            if (!fundBox.getOwner().getId().equals(user.getId()) &&
+                    fundBox.getCollaborators().stream().noneMatch(collaborator -> collaborator.getUser().getId().equals(user.getId()))) {
+                throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+            }
+        }
 
         return mapToDepositResponse(deposit);
     }
+
+
 
     public DepositSummaryResponse getDepositSummary(String email) {
         User user = getActiveUserByEmail(email);
