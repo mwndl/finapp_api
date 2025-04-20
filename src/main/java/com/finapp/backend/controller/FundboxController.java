@@ -84,16 +84,17 @@ public class FundboxController {
         return ResponseEntity.noContent().build(); // HTTP 204
     }
 
-    @PostMapping("/{id}/collaborators/{userId}")
-    @Operation(summary = "Add a collaborator to a fund box", description = "Adds a user as a collaborator to the fund box.")
-    public ResponseEntity<Void> addCollaborator(
+    @PostMapping("/{id}/invitations/{userId}")
+    @Operation(summary = "Invite a user to collaborate on a fund box", description = "Sends an invitation to a user to become a collaborator on the specified fund box.")
+    public ResponseEntity<Void> inviteCollaborator(
             @PathVariable Long id,
             @PathVariable Long userId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        fundBoxService.addCollaborator(id, userDetails.getUsername(), userId);
+        fundBoxService.inviteCollaborator(id, userDetails.getUsername(), userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
 
     @DeleteMapping("/{id}/collaborators/{userId}")
     @Operation(summary = "Remove a collaborator from a fund box", description = "Removes a user as a collaborator from the fund box.")
