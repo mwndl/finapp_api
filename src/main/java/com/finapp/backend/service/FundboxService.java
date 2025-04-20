@@ -7,6 +7,7 @@ import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
 import com.finapp.backend.model.FundBox;
+import com.finapp.backend.model.FundBoxCollaborator;
 import com.finapp.backend.model.User;
 import com.finapp.backend.model.enums.TransactionType;
 import com.finapp.backend.repository.DepositRepository;
@@ -47,13 +48,13 @@ public class FundboxService {
         User user = getUserByEmail(email);
         checkUserStatus(user);
 
-        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerId(user.getId(), pageable);
+        Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerIdOrCollaboratorsContaining(user.getId(), pageable);
 
         if (fundBoxes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        Page<FundBoxResponse> fundBoxResponses = fundBoxes.map(fb -> buildFundBoxResponse(fb, user));
+        Page<FundBoxResponse> fundBoxResponses = fundBoxes.map(fb -> buildFundBoxResponse(fb, fb.getOwner()));
         return ResponseEntity.ok(fundBoxResponses);
     }
 
@@ -108,7 +109,55 @@ public class FundboxService {
         fundBoxRepository.delete(fundBox);
     }
 
+    public void addCollaborator(Long fundBoxId, String email, Long collaboratorId) {
+        User owner = getUserByEmail(email);
+        checkUserStatus(owner);
+
+        FundBox fundBox = getFundBoxById(fundBoxId, owner);
+
+        if (fundBox.getOwner().getId().equals(collaboratorId)) {
+            throw new ApiException(ApiErrorCode.COLLABORATOR_CANNOT_BE_OWNER);
+        }
+
+        User collaborator = getUserById(collaboratorId);
+        checkUserStatus(collaborator);
+
+        FundBoxCollaborator relation = new FundBoxCollaborator();
+        relation.setFundBox(fundBox);
+        relation.setUser(collaborator);
+
+        if (!fundBox.getCollaborators().add(relation)) {
+            throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_EXISTS);
+        }
+
+        fundBoxRepository.save(fundBox);
+    }
+
+
+    public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
+        User owner = getUserByEmail(email);
+        checkUserStatus(owner);
+
+        FundBox fundBox = getFundBoxById(fundBoxId, owner);
+
+        User collaborator = getUserById(collaboratorId);
+
+        boolean removed = fundBox.getCollaborators().remove(collaborator);
+        if (!removed) {
+            throw new ApiException(ApiErrorCode.COLLABORATOR_NOT_FOUND);
+        }
+
+        fundBoxRepository.save(fundBox);
+    }
+
+
+
     // aux methods
+    private User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+    }
+
     private User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
