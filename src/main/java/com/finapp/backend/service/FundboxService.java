@@ -20,7 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +69,14 @@ public class FundboxService {
         BigDecimal balance = calculateBalance(fundBoxId);
         Page<DepositResponse> depositResponses = getDepositResponses(fundBoxId, pageable);
 
+        List<CollaboratorResponse> collaborators = fundBox.getCollaborators().stream()
+                .map(collaborator -> new CollaboratorResponse(
+                        collaborator.getUser().getId(),
+                        collaborator.getUser().getName(),
+                        collaborator.getJoinedAt()
+                ))
+                .collect(Collectors.toList());
+
         return new FundBoxDetailsResponse(
                 fundBox.getId(),
                 fundBox.getName(),
@@ -74,7 +84,8 @@ public class FundboxService {
                 fundBox.getTargetDate(),
                 new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName()),
                 balance,
-                depositResponses
+                depositResponses,
+                collaborators
         );
     }
 
