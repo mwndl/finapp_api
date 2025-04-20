@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface FundBoxRepository extends JpaRepository<FundBox, Long> {
     boolean existsByOwnerIdAndName(Long ownerId, String name);
 
-    @Query("SELECT f FROM FundBox f LEFT JOIN f.collaborators c WHERE f.owner.id = :userId OR c.id = :userId")
+    @Query("SELECT f FROM FundBox f WHERE f.owner.id = :userId OR :userId IN (SELECT fc.user.id FROM FundBoxCollaborator fc WHERE fc.fundBox.id = f.id)")
     Page<FundBox> findByOwnerIdOrCollaboratorsContaining(@Param("userId") Long userId, Pageable pageable);
 
     Page<FundBox> findByOwnerId(Long ownerId, Pageable pageable);
