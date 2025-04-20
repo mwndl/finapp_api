@@ -98,5 +98,15 @@ public class FundboxController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/{id}/leave")
+    public ResponseEntity<Void> leaveFundBox(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        fundBoxService.leaveFundBox(id, userDetails.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 }

@@ -164,6 +164,24 @@ public class FundboxService {
         fundBoxRepository.save(fundBox);
     }
 
+    public void leaveFundBox(Long fundBoxId, String email) {
+        User collaborator = getUserByEmail(email);
+        checkUserStatus(collaborator);
+        FundBox fundBox = getFundBoxById(fundBoxId, collaborator);
+
+        if (fundBox.getOwner().getId().equals(collaborator.getId()))
+            throw new ApiException(ApiErrorCode.CANNOT_LEAVE_AS_OWNER);
+
+        boolean removed = fundBox.getCollaborators().removeIf(c -> c.getUser().getId().equals(collaborator.getId()));
+        if (!removed)
+            throw new ApiException(ApiErrorCode.COLLABORATOR_NOT_FOUND);
+
+        depositRepository.unsetFundBoxForUserDeposits(collaborator.getId(), fundBoxId);
+
+        fundBoxRepository.save(fundBox);
+    }
+
+
 
     // aux methods
     private User getUserById(Long userId) {
