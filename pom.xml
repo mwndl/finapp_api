@@ -18,7 +18,16 @@
 		<license/>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>mwndl</id>
+			<name>Marcos Wiendl</name>
+			<email>contato@marcoswiendl.com</email>
+			<roles>
+				<role>Owner</role>
+				<role>Lead Developer</role>
+			</roles>
+			<url>https://github.com/mwndl</url>
+		</developer>
 	</developers>
 	<scm>
 		<connection/>
