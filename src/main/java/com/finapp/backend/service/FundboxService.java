@@ -154,7 +154,8 @@ public class FundboxService {
         boolean removed = fundBox.getCollaborators().removeIf(c -> c.getUser().getId().equals(collaborator.getId()));
         if (!removed)
             throw new ApiException(ApiErrorCode.COLLABORATOR_NOT_FOUND);
-        }
+
+        depositRepository.unsetFundBoxForUserDeposits(collaborator.getId(), fundBoxId);
 
         fundBoxRepository.save(fundBox);
     }
