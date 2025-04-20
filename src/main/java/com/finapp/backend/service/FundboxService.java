@@ -168,6 +168,7 @@ public class FundboxService {
             response.setFundBoxName(invite.getFundBox().getName());
             response.setStatus(invite.getStatus().name());
             response.setInviterName(invite.getInviter().getName());
+            response.setInvitationDate(invite.getInvitationDate());
             return response;
         });
     }
