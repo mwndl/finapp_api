@@ -231,7 +231,11 @@ public class DepositService {
         FundBox fundBox = fundBoxRepository.findById(fundBoxId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
 
-        if (!fundBox.getOwner().getEmail().equals(email))
+        boolean isOwner = fundBox.getOwner().getEmail().equals(email);
+        boolean isCollaborator = fundBox.getCollaborators().stream()
+                .anyMatch(collaborator -> collaborator.getUser().getEmail().equals(email));
+
+        if (!isOwner && !isCollaborator)
             throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
 
         deposit.setFundBox(fundBox);
