@@ -121,10 +121,14 @@ public class FundboxService {
     }
 
     public void addCollaborator(Long fundBoxId, String email, Long collaboratorId) {
-        User owner = getUserByEmail(email);
-        checkUserStatus(owner);
+        User user = getUserByEmail(email);
+        checkUserStatus(user);
 
-        FundBox fundBox = getFundBoxById(fundBoxId, owner);
+        FundBox fundBox = getFundBoxById(fundBoxId, user);
+
+        if (!fundBox.getOwner().getId().equals(user.getId())) {
+            throw new ApiException(ApiErrorCode.FORBIDDEN_COLLABORATOR_ADDITION);
+        }
 
         if (fundBox.getOwner().getId().equals(collaboratorId))
             throw new ApiException(ApiErrorCode.COLLABORATOR_CANNOT_BE_OWNER);
