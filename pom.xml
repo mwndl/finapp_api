@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.finapp</groupId>
 	<artifactId>backend</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.0.1</version>
 	<name>backend</name>
 	<description>Aplicativo de controle de metas financeiras</description>
 	<url/>
