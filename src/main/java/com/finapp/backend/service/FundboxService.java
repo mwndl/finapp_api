@@ -3,14 +3,14 @@ package com.finapp.backend.service;
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.fundbox.*;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
+import com.finapp.backend.dto.user.InviteResponse;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
-import com.finapp.backend.model.Deposit;
-import com.finapp.backend.model.FundBox;
-import com.finapp.backend.model.FundBoxCollaborator;
-import com.finapp.backend.model.User;
+import com.finapp.backend.model.*;
+import com.finapp.backend.model.enums.InvitationStatus;
 import com.finapp.backend.model.enums.TransactionType;
 import com.finapp.backend.repository.DepositRepository;
+import com.finapp.backend.repository.FundBoxInvitationRepository;
 import com.finapp.backend.repository.FundBoxRepository;
 import com.finapp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class FundboxService {
     private final FundBoxRepository fundBoxRepository;
     private final UserRepository userRepository;
     private final DepositRepository depositRepository;
+    private final FundBoxInvitationRepository fundBoxInvitationRepository;
 
     public FundBoxResponse createFundBox(String email, CreateFundBoxRequest request) {
         User user = getUserByEmail(email);
@@ -120,37 +122,89 @@ public class FundboxService {
         fundBoxRepository.delete(fundBox);
     }
 
-    public void addCollaborator(Long fundBoxId, String email, Long collaboratorId) {
-        User user = getUserByEmail(email);
-        checkUserStatus(user);
 
-        FundBox fundBox = getFundBoxById(fundBoxId, user);
+    // invites
+    public void inviteCollaborator(Long fundBoxId, String email, Long collaboratorId) {
+        User inviter = getUserByEmail(email);
+        checkUserStatus(inviter);
 
-        if (!fundBox.getOwner().getId().equals(user.getId())) {
+        FundBox fundBox = getFundBoxById(fundBoxId, inviter);
+
+        if (!fundBox.getOwner().getId().equals(inviter.getId()))
             throw new ApiException(ApiErrorCode.FORBIDDEN_COLLABORATOR_ADDITION);
-        }
 
         if (fundBox.getOwner().getId().equals(collaboratorId))
             throw new ApiException(ApiErrorCode.COLLABORATOR_CANNOT_BE_OWNER);
 
-        User collaborator = getUserById(collaboratorId);
-        checkUserStatus(collaborator);
+        User invitee = getUserById(collaboratorId);
+        checkUserStatus(invitee);
 
-        boolean collaboratorExists = fundBox.getCollaborators().stream()
+        boolean isAlreadyCollaborator = fundBox.getCollaborators().stream()
                 .anyMatch(c -> c.getUser().getId().equals(collaboratorId));
-
-        if (collaboratorExists)
+        if (isAlreadyCollaborator)
             throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_EXISTS);
 
+        boolean alreadyInvited = fundBoxInvitationRepository.existsByFundBoxAndInviteeAndStatus(fundBox, invitee, InvitationStatus.PENDING);
+        if (alreadyInvited)
+            throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_INVITED);
+
+        FundBoxInvitation invitation = new FundBoxInvitation();
+        invitation.setFundBox(fundBox);
+        invitation.setInviter(inviter);
+        invitation.setInvitee(invitee);
+        invitation.setStatus(InvitationStatus.PENDING);
+        invitation.setInvitationDate(LocalDateTime.now());
+
+        fundBoxInvitationRepository.save(invitation);
+    }
+
+    public Page<InviteResponse> getUserInvites(String username, Pageable pageable) {
+        User user = getUserByEmail(username);
+        Page<FundBoxInvitation> invites = fundBoxInvitationRepository.findByInvitee_Id(user.getId(), pageable);
+        return invites.map(invite -> {
+            InviteResponse response = new InviteResponse();
+            response.setInviteId(invite.getId());
+            response.setFundBoxId(invite.getFundBox().getId());
+            response.setFundBoxName(invite.getFundBox().getName());
+            response.setStatus(invite.getStatus().name());
+            response.setInviterName(invite.getInviter().getName());
+            return response;
+        });
+    }
+
+
+    public void acceptInvitation(Long invitationId, String email) {
+        FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
+
+        User invitee = getUserByEmail(email);
+        if (!invitation.getInvitee().getId().equals(invitee.getId()))
+            throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
+
+        if (invitation.getStatus() == InvitationStatus.ACCEPTED)
+            throw new ApiException(ApiErrorCode.INVITATION_ALREADY_ACCEPTED);
+
+        FundBox fundBox = invitation.getFundBox();
         FundBoxCollaborator relation = new FundBoxCollaborator();
         relation.setFundBox(fundBox);
-        relation.setUser(collaborator);
+        relation.setUser(invitee);
 
         fundBox.getCollaborators().add(relation);
 
         fundBoxRepository.save(fundBox);
+        fundBoxInvitationRepository.delete(invitation);
     }
 
+    public void declineInvitation(Long invitationId, String email) {
+        FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
+
+        User invitee = getUserByEmail(email);
+        if (!invitation.getInvitee().getId().equals(invitee.getId()))
+            throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
+
+        fundBoxInvitationRepository.delete(invitation);
+    }
 
 
     public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
