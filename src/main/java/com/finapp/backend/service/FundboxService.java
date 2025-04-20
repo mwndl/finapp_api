@@ -4,6 +4,7 @@ import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.fundbox.*;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
 import com.finapp.backend.dto.user.InviteResponse;
+import com.finapp.backend.dto.user.UserSummary;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.*;
@@ -79,6 +80,13 @@ public class FundboxService {
                 ))
                 .collect(Collectors.toList());
 
+        List<InviteResponse> invites = fundBoxInvitationRepository
+                .findByFundBox_IdAndStatus(fundBoxId, InvitationStatus.PENDING)
+                .stream()
+                .map(this::toInviteResponse)
+                .collect(Collectors.toList());
+
+
         return new FundBoxDetailsResponse(
                 fundBox.getId(),
                 fundBox.getName(),
@@ -87,7 +95,8 @@ public class FundboxService {
                 new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName()),
                 balance,
                 depositResponses,
-                collaborators
+                collaborators,
+                invites
         );
     }
 
@@ -161,17 +170,31 @@ public class FundboxService {
     public Page<InviteResponse> getUserInvites(String username, Pageable pageable) {
         User user = getUserByEmail(username);
         Page<FundBoxInvitation> invites = fundBoxInvitationRepository.findByInvitee_Id(user.getId(), pageable);
-        return invites.map(invite -> {
-            InviteResponse response = new InviteResponse();
-            response.setInviteId(invite.getId());
-            response.setFundBoxId(invite.getFundBox().getId());
-            response.setFundBoxName(invite.getFundBox().getName());
-            response.setStatus(invite.getStatus().name());
-            response.setInviterName(invite.getInviter().getName());
-            response.setInvitationDate(invite.getInvitationDate());
-            return response;
-        });
+        return invites.map(this::toInviteResponse);
     }
+
+
+    private InviteResponse toInviteResponse(FundBoxInvitation invite) {
+        InviteResponse response = new InviteResponse();
+        response.setInviteId(invite.getId());
+        response.setFundBox(new FundBoxSummary(
+                invite.getFundBox().getId(),
+                invite.getFundBox().getName()
+        ));
+        response.setInviter(new UserSummary(
+                invite.getInviter().getId(),
+                invite.getInviter().getName()
+        ));
+        response.setInvitee(new UserSummary(
+                invite.getInvitee().getId(),
+                invite.getInvitee().getName()
+        ));
+        response.setStatus(invite.getStatus().name());
+        response.setInvitationDate(invite.getInvitationDate());
+        return response;
+    }
+
+
 
 
     public void acceptInvitation(Long invitationId, String email) {
