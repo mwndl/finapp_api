@@ -148,13 +148,11 @@ public class FundboxService {
     public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
         User owner = getUserByEmail(email);
         checkUserStatus(owner);
-
         FundBox fundBox = getFundBoxById(fundBoxId, owner);
-
         User collaborator = getUserById(collaboratorId);
 
-        boolean removed = fundBox.getCollaborators().remove(collaborator);
-        if (!removed) {
+        boolean removed = fundBox.getCollaborators().removeIf(c -> c.getUser().getId().equals(collaborator.getId()));
+        if (!removed)
             throw new ApiException(ApiErrorCode.COLLABORATOR_NOT_FOUND);
         }
 
