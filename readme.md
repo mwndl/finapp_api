@@ -3,9 +3,11 @@
 
 ## Description
 
-Finapp is a financial management application that allows users to organize their investments into "fund boxes" (goal-based savings or investment buckets). The project is built with Spring Boot on the backend and is designed to integrate with a mobile app. Users can manage deposits and track financial goals.
+Finapp is a financial management application that allows users to organize their investments into "fund boxes" (goal-based savings or investment buckets). The project is built with Spring Boot on the backend and is designed to integrate with a mobile app. Users can manage deposits with collaborative financial goal support.
 
 ## Features
+
+-   Create collaborative find boxes by inviting other users (BETA)
 
 -   User registration and authentication with JWT
 
@@ -83,8 +85,6 @@ All available endpoints, request/response formats, and authentication details ca
 > Make sure the application is running locally before accessing.
 
 ## Planned Features
-
--   Shared fund boxes with other users
 
 -   Transform deposits into fixed income investments
 
