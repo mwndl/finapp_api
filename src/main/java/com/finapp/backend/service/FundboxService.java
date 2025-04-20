@@ -126,23 +126,27 @@ public class FundboxService {
 
         FundBox fundBox = getFundBoxById(fundBoxId, owner);
 
-        if (fundBox.getOwner().getId().equals(collaboratorId)) {
+        if (fundBox.getOwner().getId().equals(collaboratorId))
             throw new ApiException(ApiErrorCode.COLLABORATOR_CANNOT_BE_OWNER);
-        }
 
         User collaborator = getUserById(collaboratorId);
         checkUserStatus(collaborator);
+
+        boolean collaboratorExists = fundBox.getCollaborators().stream()
+                .anyMatch(c -> c.getUser().getId().equals(collaboratorId));
+
+        if (collaboratorExists)
+            throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_EXISTS);
 
         FundBoxCollaborator relation = new FundBoxCollaborator();
         relation.setFundBox(fundBox);
         relation.setUser(collaborator);
 
-        if (!fundBox.getCollaborators().add(relation)) {
-            throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_EXISTS);
-        }
+        fundBox.getCollaborators().add(relation);
 
         fundBoxRepository.save(fundBox);
     }
+
 
 
     public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
