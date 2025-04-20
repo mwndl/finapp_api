@@ -204,7 +204,7 @@ public class FundboxService {
     }
 
     private FundBox getFundBoxById(Long fundBoxId, User user) {
-        return fundBoxRepository.findByIdAndOwnerId(fundBoxId, user.getId())
+        return fundBoxRepository.findByIdAndUserIsOwnerOrCollaborator(fundBoxId, user.getId())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
     }
 
