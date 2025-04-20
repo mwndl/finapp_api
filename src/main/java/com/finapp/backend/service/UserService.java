@@ -35,21 +35,25 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
 
-        if (!user.getActive()) {
+        if (!user.getActive())
             throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
-        }
 
-        if (user.getName().equals(request.getName())) {
+        boolean changed = false;
+
+        if (request.getName() != null && !request.getName().equals(user.getName())) {
+            user.setName(request.getName());
+            changed = true;
+        } else if (request.getName() != null)
             throw new ApiException(ApiErrorCode.SAME_NAME);
-        }
 
-        if (passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (request.getPassword() != null && !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            changed = true;
+        } else if (request.getPassword() != null)
             throw new ApiException(ApiErrorCode.SAME_PASSWORD);
-        }
 
-        user.setName(request.getName());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        userRepository.save(user);
+        if (changed)
+            userRepository.save(user);
     }
 
     public void requestAccountDeletion(String email) {

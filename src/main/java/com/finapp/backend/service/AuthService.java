@@ -56,6 +56,9 @@ public class AuthService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
 
         if (!user.getActive()) {
+            if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+                throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
+
             user.setActive(true); // reactivates if it was in the process of being deleted
             user.setDeletionRequestedAt(null);
             userRepository.save(user);
@@ -84,4 +87,5 @@ public class AuthService {
 
         return new AuthResponse(token, expirationDate);
     }
+
 }
