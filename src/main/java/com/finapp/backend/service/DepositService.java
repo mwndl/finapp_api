@@ -5,6 +5,7 @@ import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.DepositSummaryResponse;
 import com.finapp.backend.dto.deposit.UpdateDepositRequest;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
+import com.finapp.backend.dto.fundbox.OwnerResponse;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.model.Deposit;
@@ -252,12 +253,22 @@ public class DepositService {
 
     private DepositResponse mapToDepositResponse(Deposit deposit) {
         FundBoxInfo fundBoxInfo = null;
+        OwnerResponse ownerResponse = null;
+
         if (deposit.getFundBox() != null) {
             fundBoxInfo = new FundBoxInfo(
                     deposit.getFundBox().getId(),
                     deposit.getFundBox().getName()
             );
         }
+
+        if (deposit.getUser() != null) {
+            ownerResponse = new OwnerResponse(
+                    deposit.getUser().getId(),
+                    deposit.getUser().getName()
+            );
+        }
+
         return new DepositResponse(
                 deposit.getId(),
                 deposit.getTransactionType() == TransactionType.EXIT
@@ -266,8 +277,11 @@ public class DepositService {
                 deposit.getDate(),
                 deposit.getDescription(),
                 fundBoxInfo,
-                deposit.getTransactionType().toString()
+                deposit.getTransactionType().toString(),
+                ownerResponse
         );
     }
+
+
 
 }
