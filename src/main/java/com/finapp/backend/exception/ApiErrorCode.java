@@ -19,6 +19,8 @@ public enum ApiErrorCode {
     MISSING_DATE(400, "MISSING_DATE", "Date is required", "The date must be provided"),
     MISSING_TRANSACTION_TYPE(400, "MISSING_TRANSACTION_TYPE", "Transaction type is required", "The transaction type must be provided"),
     VALIDATION_ERROR(400, "VALIDATION_ERROR", "Validation failed", "One or more fields did not pass validation"),
+    COLLABORATOR_ALREADY_EXISTS(400, "COLLABORATOR_ALREADY_EXISTS", "Collaborator already added", "The user is already a collaborator of this fund box."),
+    COLLABORATOR_CANNOT_BE_OWNER(400, "COLLABORATOR_CANNOT_BE_OWNER", "Invalid collaborator", "The owner of a fund box cannot be added as a collaborator."),
 
     // 401 - Unauthorized
     AUTH_EMAIL_NOT_FOUND(401, "AUTH_EMAIL_NOT_FOUND", "Email not found", "The email provided was not found in the database."),
@@ -33,6 +35,7 @@ public enum ApiErrorCode {
 
     // 404 - Not Found
     DEPOSIT_NOT_FOUND(404, "DEPOSIT_NOT_FOUND", "Deposit not found", "The requested deposit was not found"),
+    COLLABORATOR_NOT_FOUND(404, "COLLABORATOR_NOT_FOUND", "Collaborator not found", "The specified collaborator does not exist in this fund box."),
     FUND_BOX_NOT_FOUND(404, "FUND_BOX_NOT_FOUND", "FundBox not found", "Unable to find requested FundBox"),
     USER_NOT_FOUND(404, "USER_NOT_FOUND", "User not found", "The user was not found in the database."),
 
