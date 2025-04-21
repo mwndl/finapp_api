@@ -33,21 +33,38 @@ public class UserService {
 
         boolean changed = false;
 
-        if (request.getName() != null && !request.getName().equals(user.getName())) {
-            user.setName(request.getName());
-            changed = true;
-        } else if (request.getName() != null)
-            throw new ApiException(ApiErrorCode.SAME_NAME);
+        String newName = request.getName();
+        if (newName != null && !newName.trim().isEmpty()) {
+            if (!newName.matches("^[A-Za-zÀ-ÿ]+\\s+[A-Za-zÀ-ÿ]+(\\s+[A-Za-zÀ-ÿ]+)*$")) {
+                throw new ApiException(ApiErrorCode.NAME_INVALID);
+            }
+            if (!newName.equals(user.getName())) {
+                user.setName(newName);
+                changed = true;
+            } else {
+                throw new ApiException(ApiErrorCode.SAME_NAME);
+            }
+        }
 
-        if (request.getPassword() != null && !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-            changed = true;
-        } else if (request.getPassword() != null)
-            throw new ApiException(ApiErrorCode.SAME_PASSWORD);
+        String newPassword = request.getPassword();
+        if (newPassword != null && !newPassword.trim().isEmpty()) {
+            if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$")) {
+                throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
+            }
+            if (!passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+                user.setPasswordHash(passwordEncoder.encode(newPassword));
+                changed = true;
+            } else {
+                throw new ApiException(ApiErrorCode.SAME_PASSWORD);
+            }
+        }
 
-        if (changed)
+        if (changed) {
             userRepository.save(user);
+        }
     }
+
+
 
     public void requestAccountDeletion(String email) {
         User user = getUserByEmail(email);
