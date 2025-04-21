@@ -20,23 +20,16 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public UserResponse getUserInfo(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-
-        if (!user.getActive()) {
-            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
-        }
+        User user = getUserByEmail(email);
+        ensureAccountIsActive(user);
 
         return new UserResponse(user.getName(), user.getEmail());
     }
 
 
     public void updateUser(String email, UpdateUserRequest request) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-
-        if (!user.getActive())
-            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
+        User user = getUserByEmail(email);
+        ensureAccountIsActive(user);
 
         boolean changed = false;
 
@@ -57,15 +50,29 @@ public class UserService {
     }
 
     public void requestAccountDeletion(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-
-        if (!user.getActive()) {
-            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
-        }
+        User user = getUserByEmail(email);
+        ensureAccountIsActive(user);
 
         user.setActive(false);
         user.setDeletionRequestedAt(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    // aux methods
+    private User getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+    }
+
+    private User getActiveUserByEmail(String email) {
+        User user = getUserByEmail(email);
+        ensureAccountIsActive(user);
+        return user;
+    }
+
+    private void ensureAccountIsActive(User user) {
+        if (!user.getActive()) {
+            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
+        }
     }
 }
