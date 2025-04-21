@@ -34,16 +34,21 @@ public enum ApiErrorCode {
     // 403 - Forbidden
     UNAUTHORIZED_ACCESS(403, "UNAUTHORIZED_ACCESS", "Unauthorized access", "You are not authorized to access this resource."),
     ACCOUNT_LOCKED(403, "ACCOUNT_LOCKED", "Account is locked", "Your account is locked due to too many failed login attempts"),
+    FORBIDDEN_COLLABORATOR_ADDITION(403, "FORBIDDEN_COLLABORATOR_ADDITION", "Forbidden Collaborator Addition", "Only the owner of the fund box can add collaborators."),
+    FORBIDDEN_ACTION(403, "FORBIDDEN_ACTION", "Forbidden Action", "You do not have permission to perform this action."),
 
     // 404 - Not Found
     DEPOSIT_NOT_FOUND(404, "DEPOSIT_NOT_FOUND", "Deposit not found", "The requested deposit was not found"),
     COLLABORATOR_NOT_FOUND(404, "COLLABORATOR_NOT_FOUND", "Collaborator not found", "The specified collaborator does not exist in this FundBox."),
     FUND_BOX_NOT_FOUND(404, "FUND_BOX_NOT_FOUND", "FundBox not found", "Unable to find requested FundBox"),
     USER_NOT_FOUND(404, "USER_NOT_FOUND", "User not found", "The user was not found in the database."),
+    INVITATION_NOT_FOUND(404, "INVITATION_NOT_FOUND", "Invitation Not Found", "The invitation with the provided ID could not be found. Please check the invitation ID and try again."),
 
     // 409 - Conflict
     FUND_BOX_NAME_ALREADY_EXISTS(409, "FUND_BOX_NAME_ALREADY_EXISTS", "FundBox name must be unique", "The name provided is already in use, each FundBox must have a unique name per user"),
     EMAIL_ALREADY_REGISTERED(409, "EMAIL_ALREADY_REGISTERED", "Email already registered", "An account with this email already exists."),
+    COLLABORATOR_ALREADY_INVITED(409, "COLLABORATOR_ALREADY_INVITED", "Collaborator Already Invited", "The user has already been invited to collaborate on this fund box. Please check the invitation status or send a new invitation."),
+    INVITATION_ALREADY_ACCEPTED(409, "INVITATION_ALREADY_ACCEPTED", "Invitation Already Accepted", "The invitation has already been accepted. You cannot accept it again."),
 
     // 429 - Too Many Requests
     TOO_MANY_REQUESTS(429, "TOO_MANY_REQUESTS", "Too many requests", "You have exceeded the number of allowed requests. Please try again later."),

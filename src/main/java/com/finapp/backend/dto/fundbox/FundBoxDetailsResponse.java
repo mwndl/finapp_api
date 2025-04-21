@@ -1,6 +1,7 @@
 package com.finapp.backend.dto.fundbox;
 
 import com.finapp.backend.dto.deposit.DepositResponse;
+import com.finapp.backend.dto.user.InviteResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.data.domain.Page;
@@ -19,9 +20,10 @@ public class FundBoxDetailsResponse {
     private BigDecimal balance;
     private OwnerResponse owner;
     private List<CollaboratorResponse> collaborators;
+    private List<InviteResponse> invites;
     private List<DepositResponse> deposits;
 
-    public FundBoxDetailsResponse(Long id, String name, BigDecimal financialGoal, LocalDate targetDate, OwnerResponse ownerResponse, BigDecimal balance, Page<DepositResponse> depositResponses, List<CollaboratorResponse> collaborators) {
+    public FundBoxDetailsResponse(Long id, String name, BigDecimal financialGoal, LocalDate targetDate, OwnerResponse ownerResponse, BigDecimal balance, Page<DepositResponse> depositResponses, List<CollaboratorResponse> collaborators, List<InviteResponse> invites) {
         this.id = id;
         this.name = name;
         this.financialGoal = financialGoal;
@@ -29,6 +31,7 @@ public class FundBoxDetailsResponse {
         this.balance = balance;
         this.owner = ownerResponse;
         this.collaborators = collaborators;
+        this.invites = invites;
         this.deposits = depositResponses.getContent();
     }
 }
