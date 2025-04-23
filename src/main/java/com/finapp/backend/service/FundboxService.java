@@ -36,12 +36,10 @@ public class FundboxService {
     private final FundBoxInvitationRepository fundBoxInvitationRepository;
 
     public FundBoxResponse createFundBox(String email, CreateFundBoxRequest request) {
-        User user = getUserByEmail(email);
-        checkUserStatus(user);
+        User user = getActiveUserByEmail(email);
 
-        if (fundBoxExists(user.getId(), request.name())) {
+        if (fundBoxExists(user.getId(), request.name()))
             throw new ApiException(ApiErrorCode.FUND_BOX_NAME_ALREADY_EXISTS);
-        }
 
         FundBox fundBox = buildFundBox(request, user);
         FundBox saved = fundBoxRepository.save(fundBox);
@@ -50,8 +48,7 @@ public class FundboxService {
     }
 
     public ResponseEntity<Page<FundBoxResponse>> listUserFundBoxes(String email, Pageable pageable) {
-        User user = getUserByEmail(email);
-        checkUserStatus(user);
+        User user = getActiveUserByEmail(email);
 
         Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerIdOrCollaboratorsContaining(user.getId(), pageable);
 
@@ -65,8 +62,7 @@ public class FundboxService {
 
 
     public FundBoxDetailsResponse getFundBoxDetails(Long fundBoxId, String email, Pageable pageable) {
-        User user = getUserByEmail(email);
-        checkUserStatus(user);
+        User user = getActiveUserByEmail(email);
 
         FundBox fundBox = getFundBoxById(fundBoxId, user);
         BigDecimal balance = calculateBalance(fundBoxId);
@@ -101,9 +97,7 @@ public class FundboxService {
     }
 
     public FundBoxResponse updateFundBox(Long fundBoxId, String email, UpdateFundBoxRequest request) {
-        User user = getUserByEmail(email);
-        checkUserStatus(user);
-
+        User user = getActiveUserByEmail(email);
         FundBox fundBox = getFundBoxById(fundBoxId, user);
 
         if (request.getName() != null && !request.getName().trim().isEmpty())
@@ -118,9 +112,7 @@ public class FundboxService {
     }
 
     public void deleteFundBox(Long fundBoxId, String email) {
-        User user = getUserByEmail(email);
-        checkUserStatus(user);
-
+        User user = getActiveUserByEmail(email);
         FundBox fundBox = getFundBoxById(fundBoxId, user);
 
         depositRepository.findByFundBoxId(fundBoxId).forEach(deposit -> {
@@ -194,16 +186,8 @@ public class FundboxService {
         return response;
     }
 
-
-
-
     public void acceptInvitation(Long invitationId, String email) {
-        FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
-
-        User invitee = getUserByEmail(email);
-        if (!invitation.getInvitee().getId().equals(invitee.getId()))
-            throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
+        FundBoxInvitation invitation = validateInvitationForUser(invitationId, email);
 
         if (invitation.getStatus() == InvitationStatus.ACCEPTED)
             throw new ApiException(ApiErrorCode.INVITATION_ALREADY_ACCEPTED);
@@ -211,8 +195,7 @@ public class FundboxService {
         FundBox fundBox = invitation.getFundBox();
         FundBoxCollaborator relation = new FundBoxCollaborator();
         relation.setFundBox(fundBox);
-        relation.setUser(invitee);
-
+        relation.setUser(invitation.getInvitee());
         fundBox.getCollaborators().add(relation);
 
         fundBoxRepository.save(fundBox);
@@ -220,16 +203,9 @@ public class FundboxService {
     }
 
     public void declineInvitation(Long invitationId, String email) {
-        FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
-
-        User invitee = getUserByEmail(email);
-        if (!invitation.getInvitee().getId().equals(invitee.getId()))
-            throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
-
+        FundBoxInvitation invitation = validateInvitationForUser(invitationId, email);
         fundBoxInvitationRepository.delete(invitation);
     }
-
 
     public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
         User owner = getUserByEmail(email);
@@ -264,8 +240,13 @@ public class FundboxService {
     }
 
 
-
     // aux methods
+    private User getActiveUserByEmail(String email) {
+        User user = getUserByEmail(email);
+        checkUserStatus(user);
+        return user;
+    }
+
     private User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
@@ -353,5 +334,18 @@ public class FundboxService {
             );
         });
     }
+
+    private FundBoxInvitation validateInvitationForUser(Long invitationId, String email) {
+        FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
+
+        User user = getUserByEmail(email);
+        if (!invitation.getInvitee().getId().equals(user.getId())) {
+            throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
+        }
+
+        return invitation;
+    }
+
 
 }
