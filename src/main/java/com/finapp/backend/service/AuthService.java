@@ -6,7 +6,9 @@ import com.finapp.backend.dto.auth.RegisterRequest;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.model.User;
+import com.finapp.backend.model.UserToken;
 import com.finapp.backend.repository.UserRepository;
+import com.finapp.backend.repository.UserTokenRepository;
 import com.finapp.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
@@ -24,6 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+    private final UserTokenRepository userTokenRepository;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent())
@@ -67,6 +70,31 @@ public class AuthService {
         Date refreshTokenExpirationDate = jwtUtil.extractExpiration(refreshToken);
 
         return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
+    }
+
+    public void logout(String username) {
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
+
+        UserToken userToken = userTokenRepository.findByUserIdAndRevokedFalse(user.getId())
+                .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN));
+
+        userToken.setRevoked(true);
+        userTokenRepository.save(userToken);
+    }
+
+    public AuthResponse refreshToken(String refreshToken, UserDetails userDetails) {
+
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
+
+        if (isRefreshTokenRevoked(refreshToken) || !jwtUtil.isTokenValid(refreshToken, userDetails))
+            throw new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN);
+
+        String newAccessToken = generateAccessTokenForUser(user);
+        Date newAccessTokenExpirationDate = jwtUtil.extractExpiration(newAccessToken);
+
+        return new AuthResponse(newAccessToken, newAccessTokenExpirationDate, refreshToken, jwtUtil.extractExpiration(refreshToken));
     }
 
     private void authenticateUser(LoginRequest request) {
