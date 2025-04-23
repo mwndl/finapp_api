@@ -35,6 +35,7 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setActive(true);
+        user.setTokenVersion(1);
         userRepository.save(user);
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User
@@ -44,11 +45,12 @@ public class AuthService {
                 .accountLocked(!user.getActive())
                 .build();
 
-        String token = jwtUtil.generateToken(userDetails);
+        String token = jwtUtil.generateToken(userDetails, user.getTokenVersion());
         Date expirationDate = jwtUtil.extractExpiration(token);
 
         return new AuthResponse(token, expirationDate);
     }
+
 
     public AuthResponse login(LoginRequest request) {
 
@@ -81,7 +83,11 @@ public class AuthService {
                 .accountLocked(!user.getActive())
                 .build();
 
-        String token = jwtUtil.generateToken(userDetails);
+        int newTokenVersion = user.getTokenVersion() + 1;
+        user.setTokenVersion(newTokenVersion);
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(userDetails, user.getTokenVersion());
 
         Date expirationDate = jwtUtil.extractExpiration(token);
 

@@ -33,6 +33,9 @@ public class User {
     @Column(nullable = false)
     private Boolean active;
 
+    @Column(nullable = false)
+    private Integer tokenVersion = 0;
+
     private LocalDateTime deletionRequestedAt;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
