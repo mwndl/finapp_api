@@ -159,6 +159,12 @@ public class FundboxService {
         fundBoxInvitationRepository.save(invitation);
     }
 
+    public Page<InviteResponse> getSentInvites(String email, Pageable pageable) {
+        User inviter = getUserByEmail(email);
+        return fundBoxInvitationRepository.findByInviter(inviter, pageable)
+                .map(this::toInviteResponse);
+    }
+
     public void cancelInvitation(Long invitationId, String email) {
         FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));

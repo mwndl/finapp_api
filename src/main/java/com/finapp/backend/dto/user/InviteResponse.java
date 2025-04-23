@@ -1,6 +1,5 @@
 package com.finapp.backend.dto.user;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.finapp.backend.dto.fundbox.FundBoxSummary;
 import lombok.Data;
 
