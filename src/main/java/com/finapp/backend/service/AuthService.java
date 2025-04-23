@@ -37,13 +37,14 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setActive(true);
-        user.setTokenVersion(1);
         userRepository.save(user);
 
         String accessToken = generateAccessTokenForUser(user);
         String refreshToken = generateRefreshTokenForUser(user);
         Date accessTokenExpirationDate = jwtUtil.extractExpiration(accessToken);
         Date refreshTokenExpirationDate = jwtUtil.extractExpiration(refreshToken);
+
+        saveTokens(user, accessToken, refreshToken, accessTokenExpirationDate, refreshTokenExpirationDate);
 
         return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
     }
@@ -68,6 +69,8 @@ public class AuthService {
         String refreshToken = generateRefreshTokenForUser(user);
         Date accessTokenExpirationDate = jwtUtil.extractExpiration(accessToken);
         Date refreshTokenExpirationDate = jwtUtil.extractExpiration(refreshToken);
+
+        saveTokens(user, accessToken, refreshToken, accessTokenExpirationDate, refreshTokenExpirationDate);
 
         return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
     }
@@ -117,11 +120,9 @@ public class AuthService {
                 .accountLocked(!user.getActive())
                 .build();
 
-        int newTokenVersion = user.getTokenVersion() + 1;
-        user.setTokenVersion(newTokenVersion);
         userRepository.save(user);
 
-        return jwtUtil.generateToken(userDetails, user.getTokenVersion());
+        return jwtUtil.generateToken(userDetails);
     }
 
     private String generateRefreshTokenForUser(User user) {
@@ -132,6 +133,24 @@ public class AuthService {
                 .accountLocked(!user.getActive())
                 .build();
 
-        return jwtUtil.generateRefreshToken(userDetails, user.getTokenVersion());
+        return jwtUtil.generateRefreshToken(userDetails);
+    }
+
+    private void saveTokens(User user, String accessToken, String refreshToken, Date accessTokenExpiration, Date refreshTokenExpiration) {
+        UserToken userToken = new UserToken();
+        userToken.setUser(user);
+        userToken.setAccessToken(accessToken);
+        userToken.setRefreshToken(refreshToken);
+        userToken.setAccessTokenExpiration(accessTokenExpiration);
+        userToken.setRefreshTokenExpiration(refreshTokenExpiration);
+        userToken.setRevoked(false);
+        userToken.setCreatedAt(new Date());
+        userToken.setUpdatedAt(new Date());
+
+        userTokenRepository.save(userToken);
+    }
+
+    public boolean isRefreshTokenRevoked(String refreshToken) {
+        return userTokenRepository.findByRefreshTokenAndRevokedTrue(refreshToken).isPresent();
     }
 }
