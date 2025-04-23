@@ -23,7 +23,7 @@ public class InvitationController {
 
     private final FundboxService fundBoxService;
 
-    @GetMapping
+    @GetMapping("/received")
     @Operation(summary = "Get pending invitations", description = "Gets a list of pending invitations for the user")
     public ResponseEntity<Page<InviteResponse>> getInvites(
             @AuthenticationPrincipal UserDetails userDetails,
