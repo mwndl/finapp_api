@@ -26,9 +26,8 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent())
             throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
-        }
 
         User user = new User();
         user.setName(request.getName());
@@ -38,11 +37,12 @@ public class AuthService {
         user.setTokenVersion(1);
         userRepository.save(user);
 
-        String token = generateTokenForUser(user);
+        String accessToken = generateAccessTokenForUser(user);
+        String refreshToken = generateRefreshTokenForUser(user);
+        Date accessTokenExpirationDate = jwtUtil.extractExpiration(accessToken);
+        Date refreshTokenExpirationDate = jwtUtil.extractExpiration(refreshToken);
 
-        Date expirationDate = jwtUtil.extractExpiration(token);
-
-        return new AuthResponse(token, expirationDate);
+        return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -61,11 +61,12 @@ public class AuthService {
 
         authenticateUser(request);
 
-        String token = generateTokenForUser(user);
+        String accessToken = generateAccessTokenForUser(user);
+        String refreshToken = generateRefreshTokenForUser(user);
+        Date accessTokenExpirationDate = jwtUtil.extractExpiration(accessToken);
+        Date refreshTokenExpirationDate = jwtUtil.extractExpiration(refreshToken);
 
-        Date expirationDate = jwtUtil.extractExpiration(token);
-
-        return new AuthResponse(token, expirationDate);
+        return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
     }
 
     private void authenticateUser(LoginRequest request) {
@@ -80,7 +81,7 @@ public class AuthService {
         }
     }
 
-    private String generateTokenForUser(User user) {
+    private String generateAccessTokenForUser(User user) {
         UserDetails userDetails = org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
@@ -93,5 +94,16 @@ public class AuthService {
         userRepository.save(user);
 
         return jwtUtil.generateToken(userDetails, user.getTokenVersion());
+    }
+
+    private String generateRefreshTokenForUser(User user) {
+        UserDetails userDetails = org.springframework.security.core.userdetails.User
+                .withUsername(user.getEmail())
+                .password(user.getPasswordHash())
+                .roles("USER")
+                .accountLocked(!user.getActive())
+                .build();
+
+        return jwtUtil.generateRefreshToken(userDetails, user.getTokenVersion());
     }
 }
