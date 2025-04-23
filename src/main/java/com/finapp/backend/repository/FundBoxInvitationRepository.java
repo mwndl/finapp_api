@@ -17,11 +17,9 @@ public interface FundBoxInvitationRepository extends JpaRepository<FundBoxInvita
 
     boolean existsByFundBoxAndInviteeAndStatus(FundBox fundBox, User invitee, InvitationStatus status);
 
-    List<FundBoxInvitation> findByFundBoxAndStatus(FundBox fundBox, InvitationStatus status);
-
     Optional<FundBoxInvitation> findById(Long invitationId);
 
-    List<FundBoxInvitation> findByInviteeAndStatus(User invitee, InvitationStatus status);
+    Page<FundBoxInvitation> findByInviter(User inviter, Pageable pageable);
 
     Page<FundBoxInvitation> findByInvitee_Id(Long inviteeId, Pageable pageable);
 

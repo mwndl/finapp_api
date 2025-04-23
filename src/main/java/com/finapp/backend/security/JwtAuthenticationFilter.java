@@ -1,6 +1,8 @@
 package com.finapp.backend.security;
 
 import com.finapp.backend.exception.*;
+import com.finapp.backend.model.User;
+import com.finapp.backend.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
     @Autowired
     private HandlerExceptionResolver handlerExceptionResolver;
@@ -47,9 +51,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             userEmail = jwtUtil.extractUsername(jwt);
 
+            User user = userRepository.findByEmail(userEmail)
+                    .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                if (jwtUtil.isTokenValid(jwt, userDetails)) {
+                if (jwtUtil.isTokenValid(jwt, userDetails, user.getTokenVersion()))
+                {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities()
                     );
