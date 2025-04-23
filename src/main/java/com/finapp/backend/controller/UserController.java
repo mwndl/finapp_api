@@ -54,36 +54,4 @@ public class UserController {
         userService.requestAccountDeletion(userDetails.getUsername());
         return ResponseEntity.ok("Account deletion requested. You can revert by logging in within 30 days.");
     }
-
-    @GetMapping("/invites")
-    @Operation(summary = "Get pending invitations", description = "Gets a list of pending invitations for the user")
-    public ResponseEntity<Page<InviteResponse>> getInvites(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Page<InviteResponse> invites = fundboxService.getUserInvites(userDetails.getUsername(), pageable);
-        return ResponseEntity.ok(invites);
-    }
-
-    @PostMapping("/invitations/{invitationId}/accept")
-    @Operation(summary = "Accept a fund box collaboration invitation", description = "Accepts an invitation to become a collaborator on a fund box.")
-    public ResponseEntity<Void> acceptInvitation(
-            @PathVariable Long invitationId,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        fundboxService.acceptInvitation(invitationId, userDetails.getUsername());
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/invitations/{invitationId}/decline")
-    @Operation(summary = "Decline an invitation", description = "Declines an invitation to join a fund box.")
-    public ResponseEntity<Void> declineInvitation(
-            @PathVariable Long invitationId,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        fundboxService.declineInvitation(invitationId, userDetails.getUsername());
-        return ResponseEntity.noContent().build();
-    }
 }
