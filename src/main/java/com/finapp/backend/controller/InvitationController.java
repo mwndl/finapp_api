@@ -35,6 +35,18 @@ public class InvitationController {
         return ResponseEntity.ok(invites);
     }
 
+    @GetMapping("/sent")
+    @Operation(summary = "Get sent invitations", description = "Get the paginated list of invitations sent by the user")
+    public ResponseEntity<Page<InviteResponse>> getSentInvitations(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("invitationDate").descending());
+        Page<InviteResponse> sentInvites = fundBoxService.getSentInvites(userDetails.getUsername(), pageable);
+        return ResponseEntity.ok(sentInvites);
+    }
+
     @PostMapping("/{invitationId}/accept")
     @Operation(summary = "Accept a fund box collaboration invitation", description = "Accepts an invitation to become a collaborator on a fund box.")
     public ResponseEntity<Void> acceptInvitation(
@@ -75,17 +87,4 @@ public class InvitationController {
         fundBoxService.cancelInvitation(invitationId, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/sent")
-    @Operation(summary = "Get sent invitations", description = "Get the paginated list of invitations sent by the user")
-    public ResponseEntity<Page<InviteResponse>> getSentInvitations(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("invitationDate").descending());
-        Page<InviteResponse> sentInvites = fundBoxService.getSentInvites(userDetails.getUsername(), pageable);
-        return ResponseEntity.ok(sentInvites);
-    }
-
 }
