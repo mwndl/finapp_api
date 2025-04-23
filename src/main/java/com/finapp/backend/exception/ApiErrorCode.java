@@ -27,6 +27,7 @@ public enum ApiErrorCode {
     UNAUTHENTICATED(401, "UNAUTHENTICATED", "User not authenticated", "Authentication is required to access this resource. Please provide a valid token."),
     AUTH_EMAIL_NOT_FOUND(401, "AUTH_EMAIL_NOT_FOUND", "Email not found", "The email provided was not found in the database."),
     AUTH_INVALID_TOKEN(401, "AUTH_INVALID_TOKEN", "Invalid token" , "The token provided is invalid" ),
+    INVALID_REFRESH_TOKEN(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token" , "The refresh token provided is invalid" ),
     EXPIRED_SESSION(401, "EXPIRED_SESSION", "Session expired", "Your session has expired. Please log in again to continue."),
     INVALID_CREDENTIALS(401, "INVALID_CREDENTIALS", "Invalid credentials", "Email or password is incorrect."),
     ACCOUNT_DEACTIVATED(401, "ACCOUNT_DEACTIVATED", "Account is deactivated", "Your account is in the process of being deleted. Please log in again to reactivate your account."),
