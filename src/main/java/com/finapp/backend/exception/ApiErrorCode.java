@@ -49,7 +49,7 @@ public enum ApiErrorCode {
     EMAIL_ALREADY_REGISTERED(409, "EMAIL_ALREADY_REGISTERED", "Email already registered", "An account with this email already exists."),
     COLLABORATOR_ALREADY_INVITED(409, "COLLABORATOR_ALREADY_INVITED", "Collaborator Already Invited", "The user has already been invited to collaborate on this fund box. Please check the invitation status or send a new invitation."),
     INVITATION_ALREADY_ACCEPTED(409, "INVITATION_ALREADY_ACCEPTED", "Invitation Already Accepted", "The invitation has already been accepted. You cannot accept it again."),
-
+    INVITATION_CANNOT_BE_CANCELED(409, "INVITATION_CANNOT_BE_CANCELED", "Invitation Cannot Be Canceled", "Only pending invitations can be canceled."),
     // 429 - Too Many Requests
     TOO_MANY_REQUESTS(429, "TOO_MANY_REQUESTS", "Too many requests", "You have exceeded the number of allowed requests. Please try again later."),
 
