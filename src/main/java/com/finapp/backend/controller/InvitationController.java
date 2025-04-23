@@ -1,7 +1,7 @@
 package com.finapp.backend.controller;
 
 import com.finapp.backend.dto.user.InviteResponse;
-import com.finapp.backend.service.FundboxService;
+import com.finapp.backend.service.FundBoxInviteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Invitations", description = "Endpoints for managing fund box collaboration invitations")
 public class InvitationController {
 
-    private final FundboxService fundBoxService;
+    private final FundBoxInviteService fundBoxInviteService;
 
     @GetMapping("/received")
     @Operation(summary = "Get pending invitations", description = "Gets a list of pending invitations for the user")
@@ -31,7 +31,7 @@ public class InvitationController {
             @RequestParam(defaultValue = "10") int size) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Page<InviteResponse> invites = fundBoxService.getUserInvites(userDetails.getUsername(), pageable);
+        Page<InviteResponse> invites = fundBoxInviteService.getUserInvites(userDetails.getUsername(), pageable);
         return ResponseEntity.ok(invites);
     }
 
@@ -43,7 +43,7 @@ public class InvitationController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("invitationDate").descending());
-        Page<InviteResponse> sentInvites = fundBoxService.getSentInvites(userDetails.getUsername(), pageable);
+        Page<InviteResponse> sentInvites = fundBoxInviteService.getSentInvites(userDetails.getUsername(), pageable);
         return ResponseEntity.ok(sentInvites);
     }
 
@@ -53,7 +53,7 @@ public class InvitationController {
             @PathVariable Long invitationId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        fundBoxService.acceptInvitation(invitationId, userDetails.getUsername());
+        fundBoxInviteService.acceptInvitation(invitationId, userDetails.getUsername());
         return ResponseEntity.ok().build();
     }
 
@@ -63,7 +63,7 @@ public class InvitationController {
             @PathVariable Long invitationId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        fundBoxService.declineInvitation(invitationId, userDetails.getUsername());
+        fundBoxInviteService.declineInvitation(invitationId, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 
@@ -74,7 +74,7 @@ public class InvitationController {
             @PathVariable Long userId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        fundBoxService.inviteCollaborator(fundBoxId, userDetails.getUsername(), userId);
+        fundBoxInviteService.inviteCollaborator(fundBoxId, userDetails.getUsername(), userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -84,7 +84,7 @@ public class InvitationController {
             @PathVariable Long invitationId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        fundBoxService.cancelInvitation(invitationId, userDetails.getUsername());
+        fundBoxInviteService.cancelInvitation(invitationId, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
 }
