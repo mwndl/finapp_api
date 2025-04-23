@@ -2,7 +2,9 @@ package com.finapp.backend.security;
 
 import com.finapp.backend.exception.*;
 import com.finapp.backend.model.User;
+import com.finapp.backend.model.UserToken;
 import com.finapp.backend.repository.UserRepository;
+import com.finapp.backend.repository.UserTokenRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,6 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -27,10 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
-    private final UserRepository userRepository;
+    private final UserTokenRepository userTokenRepository;
 
     @Autowired
     private HandlerExceptionResolver handlerExceptionResolver;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -51,16 +56,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             userEmail = jwtUtil.extractUsername(jwt);
 
-            User user = userRepository.findByEmail(userEmail)
-                    .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-                if (jwtUtil.isTokenValid(jwt, userDetails, user.getTokenVersion()))
-                {
+
+                User user = userRepository.findByEmail(userDetails.getUsername())
+                        .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
+
+                Optional<UserToken> userTokenOpt = userTokenRepository.findByUserIdAndRevokedFalse(user.getId());
+
+                if (userTokenOpt.isEmpty()) {
+                    handlerExceptionResolver.resolveException(request, response, null,
+                            new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN));
+                    return;
+                }
+
+                if (jwtUtil.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities()
-                    );
+                            userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
