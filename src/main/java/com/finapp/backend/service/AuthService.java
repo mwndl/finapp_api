@@ -38,19 +38,12 @@ public class AuthService {
         user.setTokenVersion(1);
         userRepository.save(user);
 
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPasswordHash())
-                .roles("USER")
-                .accountLocked(!user.getActive())
-                .build();
+        String token = generateTokenForUser(user);
 
-        String token = jwtUtil.generateToken(userDetails, user.getTokenVersion());
         Date expirationDate = jwtUtil.extractExpiration(token);
 
         return new AuthResponse(token, expirationDate);
     }
-
 
     public AuthResponse login(LoginRequest request) {
 
@@ -66,6 +59,16 @@ public class AuthService {
             userRepository.save(user);
         }
 
+        authenticateUser(request);
+
+        String token = generateTokenForUser(user);
+
+        Date expirationDate = jwtUtil.extractExpiration(token);
+
+        return new AuthResponse(token, expirationDate);
+    }
+
+    private void authenticateUser(LoginRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -75,7 +78,9 @@ public class AuthService {
         } catch (BadCredentialsException e) {
             throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
         }
+    }
 
+    private String generateTokenForUser(User user) {
         UserDetails userDetails = org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
@@ -87,11 +92,6 @@ public class AuthService {
         user.setTokenVersion(newTokenVersion);
         userRepository.save(user);
 
-        String token = jwtUtil.generateToken(userDetails, user.getTokenVersion());
-
-        Date expirationDate = jwtUtil.extractExpiration(token);
-
-        return new AuthResponse(token, expirationDate);
+        return jwtUtil.generateToken(userDetails, user.getTokenVersion());
     }
-
 }
