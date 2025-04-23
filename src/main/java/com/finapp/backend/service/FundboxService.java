@@ -159,12 +159,25 @@ public class FundboxService {
         fundBoxInvitationRepository.save(invitation);
     }
 
+    public void cancelInvitation(Long invitationId, String email) {
+        FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
+
+        User inviter = getUserByEmail(email);
+        if (!invitation.getInviter().getId().equals(inviter.getId()))
+            throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
+
+        if (invitation.getStatus() != InvitationStatus.PENDING)
+            throw new ApiException(ApiErrorCode.INVITATION_CANNOT_BE_CANCELED);
+
+        fundBoxInvitationRepository.delete(invitation);
+    }
+
     public Page<InviteResponse> getUserInvites(String username, Pageable pageable) {
         User user = getUserByEmail(username);
         Page<FundBoxInvitation> invites = fundBoxInvitationRepository.findByInvitee_Id(user.getId(), pageable);
         return invites.map(this::toInviteResponse);
     }
-
 
     private InviteResponse toInviteResponse(FundBoxInvitation invite) {
         InviteResponse response = new InviteResponse();
