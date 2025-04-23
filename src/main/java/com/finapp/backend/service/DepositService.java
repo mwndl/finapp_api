@@ -37,32 +37,17 @@ public class DepositService {
     public void createDeposit(String email, CreateDepositRequest request) {
         User user = getActiveUserByEmail(email);
         validateCreateRequest(request);
-
-        FundBox fundBox = null;
-        if (request.getFundBoxId() != null)
-            fundBox = findAndValidateFundBox(request.getFundBoxId(), email);
-        Deposit deposit = new Deposit();
-        deposit.setAmount(request.getAmount());
-        deposit.setDate(request.getDate());
-        if (request.getDescription() != null)
-            deposit.setDescription(request.getDescription().trim());
-        deposit.setTransactionType(request.getTransactionType());
-        deposit.setUser(user);
-        deposit.setFundBox(fundBox);
-
+        FundBox fundBox = (request.getFundBoxId() != null) ? validateAndGetFundBox(request.getFundBoxId(), email) : null;
+        Deposit deposit = createDepositFromRequest(request, user, fundBox);
         depositRepository.save(deposit);
     }
 
+
     public ResponseEntity<Page<DepositResponse>> listUserDeposits(String email, List<TransactionType> transactionTypes, Pageable pageable) {
         User user = getActiveUserByEmail(email);
-
-        Page<Deposit> depositPage = (transactionTypes == null || transactionTypes.isEmpty())
-                ? depositRepository.findByUserId(user.getId(), pageable)
-                : depositRepository.findByUserIdAndTransactionTypeIn(user.getId(), transactionTypes, pageable);
-
-        if (depositPage.isEmpty()) {
+        Page<Deposit> depositPage = getUserDeposits(user, transactionTypes, pageable);
+        if (depositPage.isEmpty())
             return ResponseEntity.noContent().build();
-        }
 
         Page<DepositResponse> depositResponses = depositPage.map(this::mapToDepositResponse);
         return ResponseEntity.ok(depositResponses);
@@ -70,39 +55,17 @@ public class DepositService {
 
     public DepositResponse getDepositById(Long depositId, String email) {
         User user = getActiveUserByEmail(email);
-
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
-
-        FundBox fundBox = deposit.getFundBox();
-        if (fundBox == null) {
-            if (!deposit.getUser().getId().equals(user.getId()))
-                throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
-        } else {
-            if (!fundBox.getOwner().getId().equals(user.getId()) &&
-                    fundBox.getCollaborators().stream().noneMatch(collaborator -> collaborator.getUser().getId().equals(user.getId()))) {
-                throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
-            }
-        }
-
+        validateDepositAccess(deposit, user);
         return mapToDepositResponse(deposit);
     }
 
-
-
     public DepositSummaryResponse getDepositSummary(String email) {
         User user = getActiveUserByEmail(email);
-
-        BigDecimal entryTotal = Optional.ofNullable(
-                depositRepository.sumByUserIdAndTransactionType(user.getId(), TransactionType.ENTRY)
-        ).orElse(BigDecimal.ZERO);
-
-        BigDecimal exitTotal = Optional.ofNullable(
-                depositRepository.sumByUserIdAndTransactionType(user.getId(), TransactionType.EXIT)
-        ).orElse(BigDecimal.ZERO);
-
+        BigDecimal entryTotal = calculateTotalForTransactionType(user, TransactionType.ENTRY);
+        BigDecimal exitTotal = calculateTotalForTransactionType(user, TransactionType.EXIT);
         BigDecimal balance = entryTotal.subtract(exitTotal);
-
         return new DepositSummaryResponse(balance, entryTotal, exitTotal);
     }
 
@@ -110,41 +73,102 @@ public class DepositService {
         User user = getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
-
-        if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
-
-        if (request.getAmount() != null)
-            updateAmount(deposit, request.getAmount());
-        if (request.getDate() != null)
-            updateDate(deposit, request.getDate());
-        if (request.getTransactionType() != null)
-            updateTransactionType(deposit, request.getTransactionType());
-        if (request.getDescription() != null)
-            updateDescription(deposit, request.getDescription());
-        if (request.getFundBoxId() != null)
-            updateFundBox(deposit, request.getFundBoxId(), email);
-
+        validateDepositOwnership(deposit, user);
+        updateDepositField(deposit, request.getAmount(), request.getDate(), request.getTransactionType(), request.getDescription(), request.getFundBoxId(), email);
         depositRepository.save(deposit);
         return mapToDepositResponse(deposit);
     }
 
-
     public void deleteDeposit(Long depositId, String email) {
         User user = getActiveUserByEmail(email);
-
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
-
-        if (!deposit.getUser().getId().equals(user.getId()))
-            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
-
+        validateDepositOwnership(deposit, user);
         depositRepository.delete(deposit);
     }
 
-
-
     // aux methods
+    private void validateFundBoxAccess(FundBox fundBox, String email) {
+        if (fundBox == null) {
+            throw new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND);
+        }
+
+        boolean isOwner = fundBox.getOwner().getEmail().equals(email);
+        boolean isCollaborator = fundBox.getCollaborators().stream()
+                .anyMatch(collaborator -> collaborator.getUser().getEmail().equals(email));
+
+        if (!isOwner && !isCollaborator) {
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+        }
+    }
+
+    private void validateDepositAccess(Deposit deposit, User user) {
+        FundBox fundBox = deposit.getFundBox();
+        if (fundBox != null) {
+            validateFundBoxAccess(fundBox, user.getEmail());
+        } else if (!deposit.getUser().getId().equals(user.getId())) {
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+        }
+    }
+
+
+    private void validateDepositOwnership(Deposit deposit, User user) {
+        if (!deposit.getUser().getId().equals(user.getId()))
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+    }
+
+    private BigDecimal calculateTotalForTransactionType(User user, TransactionType type) {
+        return Optional.ofNullable(depositRepository.sumByUserIdAndTransactionType(user.getId(), type))
+                .orElse(BigDecimal.ZERO);
+    }
+
+    private boolean hasAccessToFundBox(FundBox fundBox, String email) {
+        return fundBox.getOwner().getEmail().equals(email) ||
+                fundBox.getCollaborators().stream().anyMatch(collaborator -> collaborator.getUser().getEmail().equals(email));
+    }
+
+    private Deposit createDepositFromRequest(CreateDepositRequest request, User user, FundBox fundBox) {
+        Deposit deposit = new Deposit();
+        deposit.setAmount(request.getAmount());
+        deposit.setDate(request.getDate());
+        if (request.getDescription() != null) {
+            deposit.setDescription(request.getDescription().trim());
+        }
+        deposit.setTransactionType(request.getTransactionType());
+        deposit.setUser(user);
+        deposit.setFundBox(fundBox);
+        return deposit;
+    }
+
+    private FundBox validateAndGetFundBox(Long fundBoxId, String email) {
+        if (fundBoxId == null)
+            throw new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND);
+
+        FundBox fundBox = fundBoxRepository.findById(fundBoxId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
+
+        if (!hasAccessToFundBox(fundBox, email))
+            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+
+        return fundBox;
+    }
+
+    private void updateDepositField(Deposit deposit, BigDecimal amount, LocalDate date, TransactionType transactionType, String description, Long fundBoxId, String email) {
+        if (amount != null) updateAmount(deposit, amount);
+        if (date != null) updateDate(deposit, date);
+        if (transactionType != null) updateTransactionType(deposit, transactionType);
+        if (description != null) updateDescription(deposit, description);
+        if (fundBoxId != null) updateFundBox(deposit, fundBoxId, email);
+    }
+
+    private Page<Deposit> getUserDeposits(User user, List<TransactionType> transactionTypes, Pageable pageable) {
+        if (transactionTypes == null || transactionTypes.isEmpty()) {
+            return depositRepository.findByUserId(user.getId(), pageable);
+        } else {
+            return depositRepository.findByUserIdAndTransactionTypeIn(user.getId(), transactionTypes, pageable);
+        }
+    }
+
     private void validateCreateRequest(CreateDepositRequest request) {
         validateAmount(request.getAmount());
         validateDate(request.getDate());
@@ -174,22 +198,6 @@ public class DepositService {
                 throw new ApiException(ApiErrorCode.INVALID_DESCRIPTION);
             }
         }
-    }
-
-    private FundBox findAndValidateFundBox(Long fundBoxId, String email) {
-        if (fundBoxId == null)
-            throw new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND);
-
-        FundBox fundBox = fundBoxRepository.findById(fundBoxId)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
-
-        boolean isOwnerOrCollaborator = fundBox.getOwner().getEmail().equals(email) ||
-                fundBox.getCollaborators().stream().anyMatch(collaborator -> collaborator.getUser().getEmail().equals(email));
-
-        if (!isOwnerOrCollaborator)
-            throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
-
-        return fundBox;
     }
 
     private void updateAmount(Deposit deposit, BigDecimal amount) {
@@ -281,7 +289,4 @@ public class DepositService {
                 ownerResponse
         );
     }
-
-
-
 }
