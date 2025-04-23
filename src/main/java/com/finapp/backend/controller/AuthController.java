@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,5 +41,31 @@ public class AuthController {
     @ApiResponse(responseCode = "401", description = "Invalid credentials")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    @Operation(
+            summary = "Refresh access token",
+            description = "Generates a new access token using a valid refresh token"
+    )
+    @ApiResponse(responseCode = "200", description = "Token successfully refreshed")
+    @ApiResponse(responseCode = "401", description = "Invalid refresh token")
+    public ResponseEntity<AuthResponse> refresh(
+            @RequestBody @Valid RefreshRequest request,
+            @AuthenticationPrincipal UserDetails userDetails)
+    {
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken(), userDetails));
+    }
+
+    @PostMapping("/logout")
+    @Operation(
+            summary = "Logout user",
+            description = "Invalidates the current access token and refresh token"
+    )
+    @ApiResponse(responseCode = "200", description = "Logout successful")
+    @ApiResponse(responseCode = "400", description = "Invalid token")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal UserDetails userDetails) {
+        authService.logout(userDetails.getUsername());
+        return ResponseEntity.noContent().build();
     }
 }
