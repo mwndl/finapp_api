@@ -50,6 +50,21 @@ public class JwtUtil {
         return createToken(claims, userDetails.getUsername());
     }
 
+    public String generateRefreshToken(UserDetails userDetails, int tokenVersion) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("tokenVersion", tokenVersion);
+
+        long refreshTokenDuration = 7 * 24 * 60 * 60 * 1000; // 7 days
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + refreshTokenDuration))
+                .signWith(secretKey)
+                .compact();
+    }
+
+
 
     public boolean isTokenValid(String token, UserDetails userDetails, int currentTokenVersion) {
         final String username = extractUsername(token);
