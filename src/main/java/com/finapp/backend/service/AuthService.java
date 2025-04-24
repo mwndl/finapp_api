@@ -42,18 +42,10 @@ public class AuthService {
         user.setActive(true);
         userRepository.save(user);
 
-        String accessToken = generateAccessTokenForUser(user);
-        String refreshToken = generateRefreshTokenForUser(user);
-        Date accessTokenExpirationDate = jwtUtil.extractExpiration(accessToken);
-        Date refreshTokenExpirationDate = jwtUtil.extractExpiration(refreshToken);
-
-        saveTokens(user, accessToken, refreshToken, accessTokenExpirationDate, refreshTokenExpirationDate);
-
-        return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
+        return generateAndPersistTokens(user);
     }
 
     public AuthResponse login(LoginRequest request) {
-
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
 
@@ -67,31 +59,13 @@ public class AuthService {
         }
 
         authenticateUser(request);
-
-        String accessToken = generateAccessTokenForUser(user);
-        String refreshToken = generateRefreshTokenForUser(user);
-        Date accessTokenExpirationDate = jwtUtil.extractExpiration(accessToken);
-        Date refreshTokenExpirationDate = jwtUtil.extractExpiration(refreshToken);
-
-        saveTokens(user, accessToken, refreshToken, accessTokenExpirationDate, refreshTokenExpirationDate);
-
-        return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
-    }
-
-    public void logout(String accessToken) {
-        UserToken userToken = userTokenRepository.findByAccessTokenAndRevokedFalse(accessToken)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN));
-        
-        userToken.setRevoked(true);
-        userTokenRepository.save(userToken);
+        return generateAndPersistTokens(user);
     }
 
     public AuthResponse refreshToken(String refreshToken) {
-
         String username = jwtUtil.extractUsername(refreshToken);
-        if (username == null) {
+        if (username == null)
             throw new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN);
-        }
 
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
@@ -121,27 +95,23 @@ public class AuthService {
     }
 
     private String generateAccessTokenForUser(User user) {
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPasswordHash())
-                .roles("USER")
-                .accountLocked(!user.getActive())
-                .build();
-
+        UserDetails userDetails = buildUserDetails(user);
         userRepository.save(user);
-
         return jwtUtil.generateToken(userDetails);
     }
 
     private String generateRefreshTokenForUser(User user) {
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
+        UserDetails userDetails = buildUserDetails(user);
+        return jwtUtil.generateRefreshToken(userDetails);
+    }
+
+    private UserDetails buildUserDetails(User user) {
+        return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
                 .roles("USER")
                 .accountLocked(!user.getActive())
                 .build();
-
-        return jwtUtil.generateRefreshToken(userDetails);
     }
 
     private void validateRefreshToken(String refreshToken, UserDetails userDetails) {
@@ -165,8 +135,24 @@ public class AuthService {
         userTokenRepository.save(userToken);
     }
 
+    private AuthResponse generateAndPersistTokens(User user) {
+        String accessToken = generateAccessTokenForUser(user);
+        String refreshToken = generateRefreshTokenForUser(user);
 
-    private void saveTokens(User user, String accessToken, String refreshToken, Date accessTokenExpiration, Date refreshTokenExpiration) {
+        saveTokens(user, accessToken, refreshToken);
+
+        return new AuthResponse(
+                accessToken,
+                jwtUtil.extractExpiration(accessToken),
+                refreshToken,
+                jwtUtil.extractExpiration(refreshToken)
+        );
+    }
+
+    private void saveTokens(User user, String accessToken, String refreshToken) {
+        Date accessTokenExpiration = jwtUtil.extractExpiration(accessToken);
+        Date refreshTokenExpiration = jwtUtil.extractExpiration(refreshToken);
+
         UserToken userToken = new UserToken();
         userToken.setUser(user);
         userToken.setAccessToken(accessToken);
@@ -179,6 +165,7 @@ public class AuthService {
 
         userTokenRepository.save(userToken);
     }
+
 
     public boolean isRefreshTokenRevoked(String refreshToken) {
         return userTokenRepository.findByRefreshTokenAndRevokedTrue(refreshToken).isPresent();
