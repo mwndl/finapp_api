@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
-    Optional<UserToken> findByUserIdAndRevokedFalse(Long userId);
 
     Optional<UserToken> findByRefreshTokenAndRevokedTrue(String refreshToken);
 
     List<UserToken> findByRevokedFalse();
 
-    void deleteByUserId(Long userId);
+    Optional<UserToken> findByRefreshTokenAndRevokedFalse(String refreshToken);
 
-    boolean existsByRefreshToken(String refreshToken);
+    Optional<UserToken> findByAccessTokenAndRevokedFalse(String accessToken);
+
 }
