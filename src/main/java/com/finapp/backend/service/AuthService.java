@@ -105,6 +105,8 @@ public class AuthService {
         String newAccessToken = generateAccessTokenForUser(user);
         Date newAccessTokenExpirationDate = jwtUtil.extractExpiration(newAccessToken);
 
+        updateAccessToken(refreshToken, newAccessToken, newAccessTokenExpirationDate);
+
         return new AuthResponse(newAccessToken, newAccessTokenExpirationDate, refreshToken, jwtUtil.extractExpiration(refreshToken));
     }
 
@@ -143,6 +145,17 @@ public class AuthService {
 
         return jwtUtil.generateRefreshToken(userDetails);
     }
+        UserToken userToken = userTokenRepository.findByRefreshTokenAndRevokedFalse(refreshToken)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN));
+
+        userToken.setAccessToken(newAccessToken);
+        userToken.setAccessTokenExpiration(newAccessTokenExpiration);
+        userToken.setUpdatedAt(new Date());
+        userToken.setRevoked(false);
+
+        userTokenRepository.save(userToken);
+    }
+
 
     private void saveTokens(User user, String accessToken, String refreshToken, Date accessTokenExpiration, Date refreshTokenExpiration) {
         UserToken userToken = new UserToken();
