@@ -1,10 +1,13 @@
 package com.finapp.backend.controller;
 
 import com.finapp.backend.dto.auth.*;
+import com.finapp.backend.exception.ApiErrorCode;
+import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -65,13 +68,19 @@ public class AuthController {
             summary = "Logout user",
             description = "Invalidates the current access token and refresh token",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "OK - Logout successful"),
-                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid access token"),
+                    @ApiResponse(responseCode = "204", description = "No Content - Logout successful"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid or missing Authorization header"),
             }
     )
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
+
         String accessToken = authorizationHeader.substring(7);
-        authService.logout(accessToken);
+        authService.revokeCurrentSession(accessToken);
         return ResponseEntity.noContent().build();
     }
+
 }
