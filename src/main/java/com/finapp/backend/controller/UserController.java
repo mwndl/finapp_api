@@ -29,17 +29,32 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final FundboxService fundboxService;
 
     @GetMapping
-    @Operation(summary = "Get user info", description = "Returns the authenticated user's profile information")
+    @Operation(
+            summary = "Get user info",
+            description = "Returns the authenticated user's profile information",
+            responses = {
+                @ApiResponse(responseCode = "200", description = "User profile returned successfully"),
+                @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
+    )
     public ResponseEntity<UserResponse> getUserInfo(@AuthenticationPrincipal UserDetails userDetails) {
         UserResponse response = userService.getUserInfo(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
 
     @PutMapping
-    @Operation(summary = "Update user", description = "Updates the authenticated user's name or password")
+    @Operation(
+            summary = "Update user",
+            description = "Updates the authenticated user's name or password",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User updated successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Invalid password")
+            }
+    )
     public ResponseEntity<?> updateUser(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody UpdateUserRequest request
@@ -49,7 +64,14 @@ public class UserController {
     }
 
     @DeleteMapping
-    @Operation(summary = "Request account deletion", description = "Marks the account for deletion. Can be undone by logging in within 30 days")
+    @Operation(
+            summary = "Request account deletion",
+            description = "Marks the account for deletion. Can be undone by logging in within 30 days",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Account deletion requested"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
+    )
     public ResponseEntity<?> requestAccountDeletion(@AuthenticationPrincipal UserDetails userDetails) {
         userService.requestAccountDeletion(userDetails.getUsername());
         return ResponseEntity.ok("Account deletion requested. You can revert by logging in within 30 days.");
