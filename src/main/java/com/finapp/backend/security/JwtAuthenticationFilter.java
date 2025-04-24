@@ -1,9 +1,7 @@
 package com.finapp.backend.security;
 
 import com.finapp.backend.exception.*;
-import com.finapp.backend.model.User;
 import com.finapp.backend.model.UserToken;
-import com.finapp.backend.repository.UserRepository;
 import com.finapp.backend.repository.UserTokenRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -12,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,48 +31,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private HandlerExceptionResolver handlerExceptionResolver;
-    @Autowired
-    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
+        final String jwt = authHeader.substring(7);
 
         try {
-            userEmail = jwtUtil.extractUsername(jwt);
+            final String userEmail = jwtUtil.extractUsername(jwt);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
 
-                User user = userRepository.findByEmail(userDetails.getUsername())
-                        .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
-
-                Optional<UserToken> userTokenOpt = userTokenRepository.findByUserIdAndRevokedFalse(user.getId());
-
-                if (userTokenOpt.isEmpty()) {
+                if (!jwtUtil.isTokenValid(jwt, userDetails)) {
                     handlerExceptionResolver.resolveException(request, response, null,
-                            new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN));
+                            new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN));
                     return;
                 }
 
-                if (jwtUtil.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                Optional<UserToken> userTokenOpt = userTokenRepository.findByAccessTokenAndRevokedFalse(jwt);
+                if (userTokenOpt.isEmpty() || jwtUtil.isTokenExpired(jwt)) {
+                    handlerExceptionResolver.resolveException(request, response, null,
+                            new ApiException(ApiErrorCode.EXPIRED_ACCESS_TOKEN));
+                    return;
                 }
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 
         } catch (ExpiredJwtException e) {
@@ -85,7 +79,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception e) {
             handlerExceptionResolver.resolveException(request, response, null,
-                    new ApiException(ApiErrorCode.AUTH_INVALID_TOKEN));
+                    new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN));
             return;
         }
 
