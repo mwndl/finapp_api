@@ -184,7 +184,7 @@ public class AuthService {
         return userTokenRepository.findByRefreshTokenAndRevokedTrue(refreshToken).isPresent();
     }
 
-    public void revokeUserSession(String accessToken) {
+    public void revokeCurrentSession(String accessToken) {
         UserToken userToken = userTokenRepository.findByAccessTokenAndRevokedFalse(accessToken)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN));
 
@@ -204,5 +204,4 @@ public class AuthService {
 
         userTokenRepository.saveAll(activeTokens);
     }
-
 }
