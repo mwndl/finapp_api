@@ -8,8 +8,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,10 +49,9 @@ public class AuthController {
     @ApiResponse(responseCode = "200", description = "Token successfully refreshed")
     @ApiResponse(responseCode = "401", description = "Invalid refresh token")
     public ResponseEntity<AuthResponse> refresh(
-            @RequestBody @Valid RefreshRequest request,
-            @AuthenticationPrincipal UserDetails userDetails)
+            @RequestBody @Valid RefreshRequest request)
     {
-        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken(), userDetails));
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
     @PostMapping("/logout")
