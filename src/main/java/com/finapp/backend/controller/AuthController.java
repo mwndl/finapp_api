@@ -21,10 +21,12 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(
             summary = "Register a new user",
-            description = "Creates a new user account and returns an authentication token"
+            description = "Creates a new user account and returns an authentication token",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "User successfully registered"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
+            }
     )
-    @ApiResponse(responseCode = "200", description = "User successfully registered")
-    @ApiResponse(responseCode = "400", description = "Validation failed: Fields are either missing or in invalid format")
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
@@ -32,11 +34,13 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(
             summary = "Authenticate user",
-            description = "Authenticates the user and returns a JWT token if credentials are valid"
+            description = "Authenticates the user and returns a JWT token if credentials are valid",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Login successful"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
     )
-    @ApiResponse(responseCode = "200", description = "Login successful")
-    @ApiResponse(responseCode = "400", description = "Missing fields")
-    @ApiResponse(responseCode = "401", description = "Invalid credentials")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
@@ -44,10 +48,12 @@ public class AuthController {
     @PostMapping("/refresh")
     @Operation(
             summary = "Refresh access token",
-            description = "Generates a new access token using a valid refresh token"
+            description = "Generates a new access token using a valid refresh token",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Token successfully refreshed"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
     )
-    @ApiResponse(responseCode = "200", description = "Token successfully refreshed")
-    @ApiResponse(responseCode = "401", description = "Invalid refresh token")
     public ResponseEntity<AuthResponse> refresh(
             @RequestBody @Valid RefreshRequest request)
     {
@@ -57,10 +63,12 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(
             summary = "Logout user",
-            description = "Invalidates the current access token and refresh token"
+            description = "Invalidates the current access token and refresh token",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Logout successful"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid access token"),
+            }
     )
-    @ApiResponse(responseCode = "200", description = "Logout successful")
-    @ApiResponse(responseCode = "400", description = "Invalid token")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorizationHeader) {
         String accessToken = authorizationHeader.substring(7);
         authService.logout(accessToken);
