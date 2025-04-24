@@ -62,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Optional<UserToken> userTokenOpt = userTokenRepository.findByAccessTokenAndRevokedFalse(jwt);
                 if (userTokenOpt.isEmpty() || jwtUtil.isTokenExpired(jwt)) {
                     handlerExceptionResolver.resolveException(request, response, null,
-                            new ApiException(ApiErrorCode.EXPIRED_ACCESS_TOKEN));
+                            new ApiException(ApiErrorCode.EXPIRED_SESSION));
                     return;
                 }
 
