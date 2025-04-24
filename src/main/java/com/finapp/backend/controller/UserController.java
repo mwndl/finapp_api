@@ -77,7 +77,7 @@ public class UserController {
         String authorizationHeader = httpServletRequest.getHeader("Authorization");
 
         String accessToken = authorizationHeader.substring(7); // Pega o token sem o 'Bearer'
-        userService.updateUserPassword(userDetails.getUsername(), request.getNewPassword(), accessToken);
+        userService.updateUserPassword(userDetails.getUsername(), request.getCurrentPassword(), request.getNewPassword(), accessToken);
         return ResponseEntity.ok("Password updated successfully");
     }
 

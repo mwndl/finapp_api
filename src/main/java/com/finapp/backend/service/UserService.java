@@ -35,10 +35,10 @@ public class UserService {
             updateUserName(user, newName);
     }
 
-    public void updateUserPassword(String email, String newPassword, String accessToken) {
+    public void updateUserPassword(String email, String currentPassword, String newPassword, String accessToken) {
         User user = getUserByEmail(email);
         ensureAccountIsActive(user);
-        updateUserPassword(user, newPassword, accessToken);
+        updateUserPassword(user, currentPassword, newPassword, accessToken);
     }
 
     public void requestAccountDeletion(String email) {
@@ -78,7 +78,10 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private void updateUserPassword(User user, String newPassword, String accessToken) {
+    private void updateUserPassword(User user, String currentPassword, String newPassword, String accessToken) {
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash()))
+            throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
+
         if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$"))
             throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
 
@@ -90,4 +93,5 @@ public class UserService {
 
         authService.revokeUserSession(accessToken);
     }
+
 }
