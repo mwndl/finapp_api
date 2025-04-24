@@ -61,8 +61,9 @@ public class AuthController {
     )
     @ApiResponse(responseCode = "200", description = "Logout successful")
     @ApiResponse(responseCode = "400", description = "Invalid token")
-    public ResponseEntity<Void> logout(@AuthenticationPrincipal UserDetails userDetails) {
-        authService.logout(userDetails.getUsername());
+    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String authorizationHeader) {
+        String accessToken = authorizationHeader.substring(7);
+        authService.logout(accessToken);
         return ResponseEntity.noContent().build();
     }
 }

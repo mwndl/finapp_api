@@ -77,13 +77,10 @@ public class AuthService {
         return new AuthResponse(accessToken, accessTokenExpirationDate, refreshToken, refreshTokenExpirationDate);
     }
 
-    public void logout(String username) {
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
-
-        UserToken userToken = userTokenRepository.findByUserIdAndRevokedFalse(user.getId())
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN));
-
+    public void logout(String accessToken) {
+        UserToken userToken = userTokenRepository.findByAccessTokenAndRevokedFalse(accessToken)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN));
+        
         userToken.setRevoked(true);
         userTokenRepository.save(userToken);
     }
@@ -145,6 +142,17 @@ public class AuthService {
 
         return jwtUtil.generateRefreshToken(userDetails);
     }
+
+    private void validateRefreshToken(String refreshToken, UserDetails userDetails) {
+        if (!jwtUtil.isTokenValid(refreshToken, userDetails))
+            throw new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN);
+        if (jwtUtil.isTokenExpired(refreshToken))
+            throw new ApiException(ApiErrorCode.EXPIRED_REFRESH_TOKEN);
+        if (isRefreshTokenRevoked(refreshToken))
+            throw new ApiException(ApiErrorCode.REVOKED_REFRESH_TOKEN);
+    }
+
+    private void updateAccessToken(String refreshToken, String newAccessToken, Date newAccessTokenExpiration) {
         UserToken userToken = userTokenRepository.findByRefreshTokenAndRevokedFalse(refreshToken)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN));
 
