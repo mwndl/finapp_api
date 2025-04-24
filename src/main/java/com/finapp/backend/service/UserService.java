@@ -18,6 +18,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     public UserResponse getUserInfo(String email) {
         User user = getUserByEmail(email);
@@ -26,45 +27,19 @@ public class UserService {
         return new UserResponse(user.getName(), user.getEmail());
     }
 
-
-    public void updateUser(String email, UpdateUserRequest request) {
+    public void updateUserData(String email, String newName) {
         User user = getUserByEmail(email);
         ensureAccountIsActive(user);
 
-        boolean changed = false;
-
-        String newName = request.getName();
-        if (newName != null && !newName.trim().isEmpty()) {
-            if (!newName.matches("^[A-Za-zÀ-ÿ]+\\s+[A-Za-zÀ-ÿ]+(\\s+[A-Za-zÀ-ÿ]+)*$")) {
-                throw new ApiException(ApiErrorCode.NAME_INVALID);
-            }
-            if (!newName.equals(user.getName())) {
-                user.setName(newName);
-                changed = true;
-            } else {
-                throw new ApiException(ApiErrorCode.SAME_NAME);
-            }
-        }
-
-        String newPassword = request.getPassword();
-        if (newPassword != null && !newPassword.trim().isEmpty()) {
-            if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$")) {
-                throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
-            }
-            if (!passwordEncoder.matches(newPassword, user.getPasswordHash())) {
-                user.setPasswordHash(passwordEncoder.encode(newPassword));
-                changed = true;
-            } else {
-                throw new ApiException(ApiErrorCode.SAME_PASSWORD);
-            }
-        }
-
-        if (changed) {
-            userRepository.save(user);
-        }
+        if (newName != null && !newName.trim().isEmpty())
+            updateUserName(user, newName);
     }
 
-
+    public void updateUserPassword(String email, String newPassword, String accessToken) {
+        User user = getUserByEmail(email);
+        ensureAccountIsActive(user);
+        updateUserPassword(user, newPassword, accessToken);
+    }
 
     public void requestAccountDeletion(String email) {
         User user = getUserByEmail(email);
@@ -88,8 +63,31 @@ public class UserService {
     }
 
     private void ensureAccountIsActive(User user) {
-        if (!user.getActive()) {
+        if (!user.getActive())
             throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
-        }
+    }
+
+    private void updateUserName(User user, String newName) {
+        if (newName.equals(user.getName()))
+            throw new ApiException(ApiErrorCode.SAME_NAME);
+
+        if (!newName.matches("^[A-Za-zÀ-ÿ]+\\s+[A-Za-zÀ-ÿ]+(\\s+[A-Za-zÀ-ÿ]+)*$"))
+            throw new ApiException(ApiErrorCode.NAME_INVALID);
+
+        user.setName(newName);
+        userRepository.save(user);
+    }
+
+    private void updateUserPassword(User user, String newPassword, String accessToken) {
+        if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$"))
+            throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
+
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash()))
+            throw new ApiException(ApiErrorCode.SAME_PASSWORD);
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        authService.revokeUserSession(accessToken);
     }
 }

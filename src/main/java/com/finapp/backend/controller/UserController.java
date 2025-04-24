@@ -1,13 +1,17 @@
 package com.finapp.backend.controller;
 
+import com.finapp.backend.dto.user.UpdateUserDataRequest;
+import com.finapp.backend.dto.user.UpdateUserPasswordRequest;
 import com.finapp.backend.dto.user.UpdateUserRequest;
 import com.finapp.backend.dto.user.UserResponse;
 import com.finapp.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,21 +41,44 @@ public class UserController {
 
     @PutMapping
     @Operation(
-            summary = "Update user",
-            description = "Updates the authenticated user's name or password",
+            summary = "Update user data",
+            description = "Updates the authenticated user's data.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "OK - User updated successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - User data updated successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to update this data")
+            }
+    )
+    public ResponseEntity<?> updateUserData(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody UpdateUserDataRequest request
+    ) {
+        userService.updateUserData(userDetails.getUsername(), request.getNewName());
+        return ResponseEntity.ok("User data updated successfully");
+    }
+
+    @PutMapping("/password")
+    @Operation(
+            summary = "Update user password",
+            description = "Updates the authenticated user's password.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Password updated successfully"),
                     @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - Invalid password")
             }
     )
-    public ResponseEntity<?> updateUser(
+    public ResponseEntity<?> updateUserPassword(
             @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody UpdateUserRequest request
+            @RequestBody @Valid UpdateUserPasswordRequest request,
+            HttpServletRequest httpServletRequest
     ) {
-        userService.updateUser(userDetails.getUsername(), request);
-        return ResponseEntity.ok("User updated successfully");
+        String authorizationHeader = httpServletRequest.getHeader("Authorization");
+
+        String accessToken = authorizationHeader.substring(7); // Pega o token sem o 'Bearer'
+        userService.updateUserPassword(userDetails.getUsername(), request.getNewPassword(), accessToken);
+        return ResponseEntity.ok("Password updated successfully");
     }
 
     @DeleteMapping
