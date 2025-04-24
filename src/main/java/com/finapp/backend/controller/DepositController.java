@@ -7,6 +7,7 @@ import com.finapp.backend.dto.deposit.UpdateDepositRequest;
 import com.finapp.backend.model.enums.TransactionType;
 import com.finapp.backend.service.DepositService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,18 @@ public class DepositController {
     private final DepositService depositService;
 
     @PostMapping
-    @Operation(summary = "Create a deposit", description = "Creates a new deposit for the authenticated user.")
+    @Operation(
+            summary = "Create a deposit",
+            description = "Creates a new deposit for the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit created successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid request data"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User is not allowed to access the selected fund box"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Fund box not found")
+
+            }
+    )
     public ResponseEntity<?> createDeposit(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CreateDepositRequest request
@@ -39,7 +51,18 @@ public class DepositController {
     }
 
     @GetMapping
-    @Operation(summary = "List user deposits", description = "Fetches a paginated list of deposits for the authenticated user.")
+    @Operation(
+            summary = "List user deposits",
+            description = "Fetches a paginated list of deposits for the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - List of deposits retrieved successfully"),
+                    @ApiResponse(responseCode = "204", description = "No Content - No deposits found"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User account is deactivated"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - User not found")
+
+            }
+    )
     public ResponseEntity<Page<DepositResponse>> listDeposits(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) List<TransactionType> transactionType,
@@ -54,7 +77,17 @@ public class DepositController {
     }
 
     @GetMapping("/{depositId}")
-    @Operation(summary = "Get a specific deposit", description = "Fetches detailed information of a specific deposit by its ID.")
+    @Operation(
+            summary = "Get a specific deposit",
+            description = "Fetches detailed information of a specific deposit by its ID.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit retrieved successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Access to the deposit is not allowed"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Deposit or user not found")
+
+            }
+    )
     public ResponseEntity<DepositResponse> getDepositById(
             @PathVariable Long depositId,
             @AuthenticationPrincipal UserDetails userDetails
@@ -64,13 +97,34 @@ public class DepositController {
     }
 
     @GetMapping("/summary")
-    @Operation(summary = "Get deposit summary", description = "Fetches a summary of the user's deposits.")
+    @Operation(
+            summary = "Get deposit summary",
+            description = "Fetches a summary of the user's deposits.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit summary retrieved successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User account is deactivated"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - User not found")
+
+            }
+    )
     public ResponseEntity<DepositSummaryResponse> getSummary(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(depositService.getDepositSummary(userDetails.getUsername()));
     }
 
     @PutMapping("/{depositId}")
-    @Operation(summary = "Update a deposit", description = "Updates an existing deposit for the authenticated user.")
+    @Operation(
+            summary = "Update a deposit",
+            description = "Updates an existing deposit for the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit updated successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad request - Invalid request data"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to update this deposit or fund box"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Deposit or fund box not found")
+
+            }
+    )
     public ResponseEntity<DepositResponse> updateDeposit(
             @PathVariable Long depositId,
             @RequestBody @Valid UpdateDepositRequest request,
@@ -81,7 +135,15 @@ public class DepositController {
     }
 
     @DeleteMapping("/{depositId}")
-    @Operation(summary = "Delete a deposit", description = "Deletes a specific deposit by its ID.")
+    @Operation(
+            summary = "Delete a deposit",
+            description = "Deletes a specific deposit by its ID.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Deposit deleted successfully"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to delete this deposit"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Deposit not found")
+            }
+    )
     public ResponseEntity<Void> deleteDeposit(
             @PathVariable Long depositId,
             @AuthenticationPrincipal UserDetails userDetails

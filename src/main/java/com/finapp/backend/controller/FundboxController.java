@@ -6,6 +6,7 @@ import com.finapp.backend.dto.fundbox.FundBoxResponse;
 import com.finapp.backend.dto.fundbox.UpdateFundBoxRequest;
 import com.finapp.backend.service.FundboxService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,15 @@ public class FundboxController {
     private final FundboxService fundBoxService;
 
     @PostMapping
-    @Operation(summary = "Create a fund box", description = "Creates a new fund box for the authenticated user.")
+    @Operation(
+            summary = "Create a fund box",
+            description = "Creates a new fund box for the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Created - Fund box created successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad request - Invalid request data or fund box name already exists"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
+    )
     public ResponseEntity<FundBoxResponse> createFundBox(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CreateFundBoxRequest request
@@ -38,7 +47,15 @@ public class FundboxController {
     }
 
     @GetMapping
-    @Operation(summary = "List user fund boxes", description = "Fetches a paginated list of fund boxes for the authenticated user.")
+    @Operation(
+            summary = "List user fund boxes",
+            description = "Fetches a paginated list of fund boxes for the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Fund boxes fetched successfully"),
+                    @ApiResponse(responseCode = "204", description = "No Content - No fund boxes found for the user"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
+    )
     public ResponseEntity<Page<FundBoxResponse>> listUserFundBoxes(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
@@ -49,7 +66,16 @@ public class FundboxController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get a specific fund box", description = "Fetches details of a specific fund box by its ID.")
+    @Operation(
+            summary = "Get a specific fund box",
+            description = "Fetches details of a specific fund box by its ID.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Fund box details fetched successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User is not allowed to access this fund box"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Fund box not found")
+            }
+    )
     public ResponseEntity<FundBoxDetailsResponse> getFundBoxById(
             @PathVariable Long id,
             @RequestParam(defaultValue = "0") int page,
@@ -63,7 +89,17 @@ public class FundboxController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update a fund box", description = "Updates an existing fund box for the authenticated user.")
+    @Operation(
+            summary = "Update a fund box",
+            description = "Updates an existing fund box for the authenticated user.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Fund box updated successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad request - Invalid request data"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User is not allowed to update this fund box"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Fund box not found")
+            }
+    )
     public ResponseEntity<FundBoxResponse> updateFundBox(
             @PathVariable Long id,
             @Valid @RequestBody UpdateFundBoxRequest request,
@@ -75,7 +111,16 @@ public class FundboxController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a fund box", description = "Deletes a specific fund box by its ID.")
+    @Operation(
+            summary = "Delete a fund box",
+            description = "Deletes a specific fund box by its ID.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Fund box deleted successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User is not allowed to delete this fund box"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Fund box not found")
+            }
+    )
     public ResponseEntity<Void> deleteFundBox(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails
@@ -85,7 +130,16 @@ public class FundboxController {
     }
 
     @DeleteMapping("/{id}/collaborators/{userId}")
-    @Operation(summary = "Remove a collaborator from a fund box", description = "Removes a user as a collaborator from the fund box.")
+    @Operation(
+            summary = "Remove a collaborator from a fund box",
+            description = "Removes a user as a collaborator from the fund box.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Collaborator removed successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Only the owner can remove collaborators"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Fund box or collaborator not found")
+            }
+    )
     public ResponseEntity<Void> removeCollaborator(
             @PathVariable Long id,
             @PathVariable Long userId,
@@ -96,7 +150,16 @@ public class FundboxController {
     }
 
     @DeleteMapping("/{id}/leave")
-    @Operation(summary = "Leave a fund box", description = "Removes the authenticated user from the fund box as a collaborator.")
+    @Operation(
+            summary = "Leave a fund box",
+            description = "Removes the authenticated user from the fund box as a collaborator.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - User left the fund box successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - Owners cannot leave their own fund box"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Fund box not found or user not a collaborator")
+            }
+    )
     public ResponseEntity<Void> leaveFundBox(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails

@@ -1,10 +1,13 @@
 package com.finapp.backend.controller;
 
 import com.finapp.backend.dto.auth.*;
+import com.finapp.backend.exception.ApiErrorCode;
+import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +24,12 @@ public class AuthController {
     @PostMapping("/register")
     @Operation(
             summary = "Register a new user",
-            description = "Creates a new user account and returns an authentication token"
+            description = "Creates a new user account and returns an authentication token",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - User successfully registered"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
+            }
     )
-    @ApiResponse(responseCode = "200", description = "User successfully registered")
-    @ApiResponse(responseCode = "400", description = "Validation failed: Fields are either missing or in invalid format")
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
@@ -32,12 +37,50 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(
             summary = "Authenticate user",
-            description = "Authenticates the user and returns a JWT token if credentials are valid"
+            description = "Authenticates the user and returns a JWT token if credentials are valid",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Login successful"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
     )
-    @ApiResponse(responseCode = "200", description = "Login successful")
-    @ApiResponse(responseCode = "400", description = "Missing fields")
-    @ApiResponse(responseCode = "401", description = "Invalid credentials")
     public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
+
+    @PostMapping("/refresh")
+    @Operation(
+            summary = "Refresh access token",
+            description = "Generates a new access token using a valid refresh token",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Token successfully refreshed"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
+    )
+    public ResponseEntity<AuthResponse> refresh(
+            @RequestBody @Valid RefreshRequest request)
+    {
+        return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
+    }
+
+    @PostMapping("/logout")
+    @Operation(
+            summary = "Logout user",
+            description = "Invalidates the current access token and refresh token",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Logout successful"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid or missing Authorization header"),
+            }
+    )
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
+
+        String accessToken = authorizationHeader.substring(7);
+        authService.revokeCurrentSession(accessToken);
+        return ResponseEntity.noContent().build();
+    }
+
 }
