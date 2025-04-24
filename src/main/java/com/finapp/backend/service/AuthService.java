@@ -13,6 +13,7 @@ import com.finapp.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +28,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserTokenRepository userTokenRepository;
+    private final UserDetailsService userDetailsService;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent())
@@ -86,13 +88,19 @@ public class AuthService {
         userTokenRepository.save(userToken);
     }
 
-    public AuthResponse refreshToken(String refreshToken, UserDetails userDetails) {
+    public AuthResponse refreshToken(String refreshToken) {
 
-        User user = userRepository.findByEmail(userDetails.getUsername())
+        String username = jwtUtil.extractUsername(refreshToken);
+        if (username == null) {
+            throw new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
 
-        if (isRefreshTokenRevoked(refreshToken) || !jwtUtil.isTokenValid(refreshToken, userDetails))
-            throw new ApiException(ApiErrorCode.INVALID_REFRESH_TOKEN);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+        validateRefreshToken(refreshToken, userDetails);
 
         String newAccessToken = generateAccessTokenForUser(user);
         Date newAccessTokenExpirationDate = jwtUtil.extractExpiration(newAccessToken);
