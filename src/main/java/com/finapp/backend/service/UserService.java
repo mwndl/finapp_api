@@ -1,6 +1,5 @@
 package com.finapp.backend.service;
 
-import com.finapp.backend.dto.user.UpdateUserRequest;
 import com.finapp.backend.dto.user.UserResponse;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
@@ -35,10 +34,10 @@ public class UserService {
             updateUserName(user, newName);
     }
 
-    public void updateUserPassword(String email, String currentPassword, String newPassword, String accessToken) {
+    public void updateUserPassword(String email, String currentPassword, String newPassword) {
         User user = getUserByEmail(email);
         ensureAccountIsActive(user);
-        updateUserPassword(user, currentPassword, newPassword, accessToken);
+        updateUserPassword(user, currentPassword, newPassword);
     }
 
     public void requestAccountDeletion(String email) {
@@ -78,7 +77,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private void updateUserPassword(User user, String currentPassword, String newPassword, String accessToken) {
+    private void updateUserPassword(User user, String currentPassword, String newPassword) {
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash()))
             throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
 
@@ -91,7 +90,7 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        authService.revokeUserSession(accessToken);
+        authService.revokeAllUserSessions(user);
     }
 
 }

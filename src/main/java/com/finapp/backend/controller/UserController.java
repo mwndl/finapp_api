@@ -2,16 +2,13 @@ package com.finapp.backend.controller;
 
 import com.finapp.backend.dto.user.UpdateUserDataRequest;
 import com.finapp.backend.dto.user.UpdateUserPasswordRequest;
-import com.finapp.backend.dto.user.UpdateUserRequest;
 import com.finapp.backend.dto.user.UserResponse;
 import com.finapp.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -71,13 +68,9 @@ public class UserController {
     )
     public ResponseEntity<?> updateUserPassword(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody @Valid UpdateUserPasswordRequest request,
-            HttpServletRequest httpServletRequest
+            @RequestBody @Valid UpdateUserPasswordRequest request
     ) {
-        String authorizationHeader = httpServletRequest.getHeader("Authorization");
-
-        String accessToken = authorizationHeader.substring(7); // Pega o token sem o 'Bearer'
-        userService.updateUserPassword(userDetails.getUsername(), request.getCurrentPassword(), request.getNewPassword(), accessToken);
+        userService.updateUserPassword(userDetails.getUsername(), request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok("Password updated successfully");
     }
 

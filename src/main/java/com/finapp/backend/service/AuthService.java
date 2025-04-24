@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -192,4 +193,16 @@ public class AuthService {
 
         userTokenRepository.save(userToken);
     }
+
+    public void revokeAllUserSessions(User user) {
+        List<UserToken> activeTokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
+
+        for (UserToken token : activeTokens) {
+            token.setRevoked(true);
+            token.setUpdatedAt(new Date());
+        }
+
+        userTokenRepository.saveAll(activeTokens);
+    }
+
 }
