@@ -34,7 +34,7 @@ public class DepositController {
             summary = "Create a deposit",
             description = "Creates a new deposit for the authenticated user.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Deposit created successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit created successfully"),
                     @ApiResponse(responseCode = "400", description = "Bad Request - Invalid request data"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - User is not allowed to access the selected fund box"),
@@ -55,7 +55,7 @@ public class DepositController {
             summary = "List user deposits",
             description = "Fetches a paginated list of deposits for the authenticated user.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "List of deposits retrieved successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - List of deposits retrieved successfully"),
                     @ApiResponse(responseCode = "204", description = "No Content - No deposits found"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - User account is deactivated"),
@@ -81,7 +81,7 @@ public class DepositController {
             summary = "Get a specific deposit",
             description = "Fetches detailed information of a specific deposit by its ID.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Deposit retrieved successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit retrieved successfully"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - Access to the deposit is not allowed"),
                     @ApiResponse(responseCode = "404", description = "Not Found - Deposit or user not found")
@@ -101,7 +101,7 @@ public class DepositController {
             summary = "Get deposit summary",
             description = "Fetches a summary of the user's deposits.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Deposit summary retrieved successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit summary retrieved successfully"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - User account is deactivated"),
                     @ApiResponse(responseCode = "404", description = "Not Found - User not found")
@@ -117,7 +117,7 @@ public class DepositController {
             summary = "Update a deposit",
             description = "Updates an existing deposit for the authenticated user.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Deposit updated successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit updated successfully"),
                     @ApiResponse(responseCode = "400", description = "Bad request - Invalid request data"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to update this deposit or fund box"),
@@ -139,7 +139,9 @@ public class DepositController {
             summary = "Delete a deposit",
             description = "Deletes a specific deposit by its ID.",
             responses = {
-
+                    @ApiResponse(responseCode = "204", description = "No Content - Deposit deleted successfully"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to delete this deposit"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Deposit not found")
             }
     )
     public ResponseEntity<Void> deleteDeposit(

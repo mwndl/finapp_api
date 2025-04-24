@@ -23,7 +23,7 @@ public class AuthController {
             summary = "Register a new user",
             description = "Creates a new user account and returns an authentication token",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User successfully registered"),
+                    @ApiResponse(responseCode = "200", description = "OK - User successfully registered"),
                     @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
             }
     )
@@ -36,7 +36,7 @@ public class AuthController {
             summary = "Authenticate user",
             description = "Authenticates the user and returns a JWT token if credentials are valid",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Login successful"),
+                    @ApiResponse(responseCode = "200", description = "OK - Login successful"),
                     @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
@@ -50,7 +50,7 @@ public class AuthController {
             summary = "Refresh access token",
             description = "Generates a new access token using a valid refresh token",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Token successfully refreshed"),
+                    @ApiResponse(responseCode = "200", description = "OK - Token successfully refreshed"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
@@ -65,7 +65,7 @@ public class AuthController {
             summary = "Logout user",
             description = "Invalidates the current access token and refresh token",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Logout successful"),
+                    @ApiResponse(responseCode = "200", description = "OK - Logout successful"),
                     @ApiResponse(responseCode = "400", description = "Bad Request - Invalid access token"),
             }
     )

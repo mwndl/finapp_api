@@ -29,7 +29,7 @@ public class InvitationController {
             summary = "Get pending invitations",
             description = "Gets a list of pending invitations for the user",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Pending invitations retrieved successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - Pending invitations retrieved successfully"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
@@ -48,7 +48,7 @@ public class InvitationController {
             summary = "Get sent invitations",
             description = "Get the paginated list of invitations sent by the user",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Sent invitations retrieved successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - Sent invitations retrieved successfully"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
@@ -67,11 +67,11 @@ public class InvitationController {
             summary = "Accept a fund box collaboration invitation",
             description = "Accepts an invitation to become a collaborator on a fund box.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Invitation accepted successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invitation has already been accepted"),
+                    @ApiResponse(responseCode = "200", description = "OK - Invitation accepted successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invitation has already been accepted"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - invitation does not belong to the user"),
-                    @ApiResponse(responseCode = "404", description = "Invitation not found")
+                    @ApiResponse(responseCode = "404", description = "Not Found - Invitation not found")
             }
     )
     public ResponseEntity<Void> acceptInvitation(
@@ -87,10 +87,10 @@ public class InvitationController {
             summary = "Decline an invitation",
             description = "Declines an invitation to join a fund box.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "Invitation declined successfully"),
+                    @ApiResponse(responseCode = "204", description = "OK - Invitation declined successfully"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - invitation does not belong to the user"),
-                    @ApiResponse(responseCode = "404", description = "Invitation not found"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Invitation not found"),
             }
     )
     public ResponseEntity<Void> declineInvitation(
@@ -106,11 +106,11 @@ public class InvitationController {
             summary = "Invite a user to a fund box",
             description = "Invites a user to collaborate on a specific fund box.",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Invitation sent successfully"),
-                    @ApiResponse(responseCode = "400", description = "User is already a collaborator or has a pending invitation"),
+                    @ApiResponse(responseCode = "201", description = "Created - Invitation sent successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - User is already a collaborator or has a pending invitation"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - only the owner can invite collaborators"),
-                    @ApiResponse(responseCode = "404", description = "Fund box or user not found"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Fund box or user not found"),
             }
     )
     public ResponseEntity<Void> inviteCollaborator(
@@ -127,11 +127,11 @@ public class InvitationController {
             summary = "Cancel an invitation",
             description = "Cancels a pending invitation to a fund box.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "Invitation canceled successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invitation cannot be canceled"),
+                    @ApiResponse(responseCode = "204", description = "No Content - Invitation canceled successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invitation cannot be canceled"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - invitation does not belong to the user"),
-                    @ApiResponse(responseCode = "404", description = "Invitation not found"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Invitation not found"),
             }
     )
     public ResponseEntity<Void> cancelInvitation(

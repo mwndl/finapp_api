@@ -1,26 +1,17 @@
 package com.finapp.backend.controller;
 
-import com.finapp.backend.dto.user.InviteResponse;
 import com.finapp.backend.dto.user.UpdateUserRequest;
 import com.finapp.backend.dto.user.UserResponse;
-import com.finapp.backend.service.FundboxService;
 import com.finapp.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -35,7 +26,7 @@ public class UserController {
             summary = "Get user info",
             description = "Returns the authenticated user's profile information",
             responses = {
-                @ApiResponse(responseCode = "200", description = "User profile returned successfully"),
+                @ApiResponse(responseCode = "200", description = "OK - User profile returned successfully"),
                 @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
@@ -49,7 +40,7 @@ public class UserController {
             summary = "Update user",
             description = "Updates the authenticated user's name or password",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "User updated successfully"),
+                    @ApiResponse(responseCode = "200", description = "OK - User updated successfully"),
                     @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - Invalid password")
@@ -68,7 +59,7 @@ public class UserController {
             summary = "Request account deletion",
             description = "Marks the account for deletion. Can be undone by logging in within 30 days",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Account deletion requested"),
+                    @ApiResponse(responseCode = "200", description = "OK - Account deletion requested"),
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
