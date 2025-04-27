@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.finapp</groupId>
 	<artifactId>backend</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<name>backend</name>
 	<description>Aplicativo de controle de metas financeiras</description>
 	<url/>
@@ -18,7 +18,16 @@
 		<license/>
 	</licenses>
 	<developers>
-		<developer/>
+		<developer>
+			<id>mwndl</id>
+			<name>Marcos Wiendl</name>
+			<email>contato@marcoswiendl.com</email>
+			<roles>
+				<role>Owner</role>
+				<role>Lead Developer</role>
+			</roles>
+			<url>https://github.com/mwndl</url>
+		</developer>
 	</developers>
 	<scm>
 		<connection/>

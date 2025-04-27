@@ -35,16 +35,11 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setActive(true);
+        user.setTokenVersion(1);
         userRepository.save(user);
 
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPasswordHash())
-                .roles("USER")
-                .accountLocked(!user.getActive())
-                .build();
+        String token = generateTokenForUser(user);
 
-        String token = jwtUtil.generateToken(userDetails);
         Date expirationDate = jwtUtil.extractExpiration(token);
 
         return new AuthResponse(token, expirationDate);
@@ -64,6 +59,16 @@ public class AuthService {
             userRepository.save(user);
         }
 
+        authenticateUser(request);
+
+        String token = generateTokenForUser(user);
+
+        Date expirationDate = jwtUtil.extractExpiration(token);
+
+        return new AuthResponse(token, expirationDate);
+    }
+
+    private void authenticateUser(LoginRequest request) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -73,7 +78,9 @@ public class AuthService {
         } catch (BadCredentialsException e) {
             throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
         }
+    }
 
+    private String generateTokenForUser(User user) {
         UserDetails userDetails = org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
@@ -81,11 +88,10 @@ public class AuthService {
                 .accountLocked(!user.getActive())
                 .build();
 
-        String token = jwtUtil.generateToken(userDetails);
+        int newTokenVersion = user.getTokenVersion() + 1;
+        user.setTokenVersion(newTokenVersion);
+        userRepository.save(user);
 
-        Date expirationDate = jwtUtil.extractExpiration(token);
-
-        return new AuthResponse(token, expirationDate);
+        return jwtUtil.generateToken(userDetails, user.getTokenVersion());
     }
-
 }

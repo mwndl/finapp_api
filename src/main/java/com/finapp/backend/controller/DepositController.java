@@ -6,6 +6,8 @@ import com.finapp.backend.dto.deposit.DepositSummaryResponse;
 import com.finapp.backend.dto.deposit.UpdateDepositRequest;
 import com.finapp.backend.model.enums.TransactionType;
 import com.finapp.backend.service.DepositService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,11 +23,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/deposit")
 @RequiredArgsConstructor
+@Tag(name = "Deposit", description = "Endpoints for managing deposits")
 public class DepositController {
 
     private final DepositService depositService;
 
     @PostMapping
+    @Operation(summary = "Create a deposit", description = "Creates a new deposit for the authenticated user.")
     public ResponseEntity<?> createDeposit(
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody CreateDepositRequest request
@@ -35,6 +39,7 @@ public class DepositController {
     }
 
     @GetMapping
+    @Operation(summary = "List user deposits", description = "Fetches a paginated list of deposits for the authenticated user.")
     public ResponseEntity<Page<DepositResponse>> listDeposits(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) List<TransactionType> transactionType,
@@ -49,6 +54,7 @@ public class DepositController {
     }
 
     @GetMapping("/{depositId}")
+    @Operation(summary = "Get a specific deposit", description = "Fetches detailed information of a specific deposit by its ID.")
     public ResponseEntity<DepositResponse> getDepositById(
             @PathVariable Long depositId,
             @AuthenticationPrincipal UserDetails userDetails
@@ -58,11 +64,13 @@ public class DepositController {
     }
 
     @GetMapping("/summary")
+    @Operation(summary = "Get deposit summary", description = "Fetches a summary of the user's deposits.")
     public ResponseEntity<DepositSummaryResponse> getSummary(@AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(depositService.getDepositSummary(userDetails.getUsername()));
     }
 
     @PutMapping("/{depositId}")
+    @Operation(summary = "Update a deposit", description = "Updates an existing deposit for the authenticated user.")
     public ResponseEntity<DepositResponse> updateDeposit(
             @PathVariable Long depositId,
             @RequestBody @Valid UpdateDepositRequest request,
@@ -73,6 +81,7 @@ public class DepositController {
     }
 
     @DeleteMapping("/{depositId}")
+    @Operation(summary = "Delete a deposit", description = "Deletes a specific deposit by its ID.")
     public ResponseEntity<Void> deleteDeposit(
             @PathVariable Long depositId,
             @AuthenticationPrincipal UserDetails userDetails

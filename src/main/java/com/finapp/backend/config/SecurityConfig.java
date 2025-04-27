@@ -1,5 +1,6 @@
 package com.finapp.backend.config;
 
+import com.finapp.backend.security.CustomAuthenticationHandler;
 import com.finapp.backend.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -38,10 +39,13 @@ public class SecurityConfig {
                 ).permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling()
+                    .authenticationEntryPoint(new CustomAuthenticationHandler());
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(

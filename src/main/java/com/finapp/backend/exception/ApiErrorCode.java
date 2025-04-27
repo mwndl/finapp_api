@@ -19,27 +19,37 @@ public enum ApiErrorCode {
     MISSING_DATE(400, "MISSING_DATE", "Date is required", "The date must be provided"),
     MISSING_TRANSACTION_TYPE(400, "MISSING_TRANSACTION_TYPE", "Transaction type is required", "The transaction type must be provided"),
     VALIDATION_ERROR(400, "VALIDATION_ERROR", "Validation failed", "One or more fields did not pass validation"),
+    COLLABORATOR_ALREADY_EXISTS(400, "COLLABORATOR_ALREADY_EXISTS", "Collaborator already added", "The user is already a collaborator of this FundBox."),
+    COLLABORATOR_CANNOT_BE_OWNER(400, "COLLABORATOR_CANNOT_BE_OWNER", "Invalid collaborator", "The owner of a FundBox cannot be added as a collaborator."),
+    CANNOT_LEAVE_AS_OWNER(400, "CANNOT_LEAVE_AS_OWNER", "Cannot Leave As Owner", "You cannot leave a FundBox that you own. This method is intended for FundBox collaborators."),
 
     // 401 - Unauthorized
+    UNAUTHENTICATED(401, "UNAUTHENTICATED", "User not authenticated", "Authentication is required to access this resource. Please provide a valid token."),
     AUTH_EMAIL_NOT_FOUND(401, "AUTH_EMAIL_NOT_FOUND", "Email not found", "The email provided was not found in the database."),
     AUTH_INVALID_TOKEN(401, "AUTH_INVALID_TOKEN", "Invalid token" , "The token provided is invalid" ),
     EXPIRED_SESSION(401, "EXPIRED_SESSION", "Session expired", "Your session has expired. Please log in again to continue."),
     INVALID_CREDENTIALS(401, "INVALID_CREDENTIALS", "Invalid credentials", "Email or password is incorrect."),
     ACCOUNT_DEACTIVATED(401, "ACCOUNT_DEACTIVATED", "Account is deactivated", "Your account is in the process of being deleted. Please log in again to reactivate your account."),
-    UNAUTHORIZED_ACCESS(401, "UNAUTHORIZED_ACCESS", "Unauthorized access", "You are not authorized to access this resource."),
 
     // 403 - Forbidden
+    UNAUTHORIZED_ACCESS(403, "UNAUTHORIZED_ACCESS", "Unauthorized access", "You are not authorized to access this resource."),
     ACCOUNT_LOCKED(403, "ACCOUNT_LOCKED", "Account is locked", "Your account is locked due to too many failed login attempts"),
+    FORBIDDEN_COLLABORATOR_ADDITION(403, "FORBIDDEN_COLLABORATOR_ADDITION", "Forbidden Collaborator Addition", "Only the owner of the fund box can add collaborators."),
+    FORBIDDEN_ACTION(403, "FORBIDDEN_ACTION", "Forbidden Action", "You do not have permission to perform this action."),
 
     // 404 - Not Found
     DEPOSIT_NOT_FOUND(404, "DEPOSIT_NOT_FOUND", "Deposit not found", "The requested deposit was not found"),
+    COLLABORATOR_NOT_FOUND(404, "COLLABORATOR_NOT_FOUND", "Collaborator not found", "The specified collaborator does not exist in this FundBox."),
     FUND_BOX_NOT_FOUND(404, "FUND_BOX_NOT_FOUND", "FundBox not found", "Unable to find requested FundBox"),
     USER_NOT_FOUND(404, "USER_NOT_FOUND", "User not found", "The user was not found in the database."),
+    INVITATION_NOT_FOUND(404, "INVITATION_NOT_FOUND", "Invitation Not Found", "The invitation with the provided ID could not be found. Please check the invitation ID and try again."),
 
     // 409 - Conflict
-    FUND_BOX_NAME_ALREADY_EXISTS(409, "FUND_BOX_NAME_ALREADY_EXISTS", "Fundbox name must be unique", "The name provided is already in use, each fundbox must have a unique name per user"),
+    FUND_BOX_NAME_ALREADY_EXISTS(409, "FUND_BOX_NAME_ALREADY_EXISTS", "FundBox name must be unique", "The name provided is already in use, each FundBox must have a unique name per user"),
     EMAIL_ALREADY_REGISTERED(409, "EMAIL_ALREADY_REGISTERED", "Email already registered", "An account with this email already exists."),
-
+    COLLABORATOR_ALREADY_INVITED(409, "COLLABORATOR_ALREADY_INVITED", "Collaborator Already Invited", "The user has already been invited to collaborate on this fund box. Please check the invitation status or send a new invitation."),
+    INVITATION_ALREADY_ACCEPTED(409, "INVITATION_ALREADY_ACCEPTED", "Invitation Already Accepted", "The invitation has already been accepted. You cannot accept it again."),
+    INVITATION_CANNOT_BE_CANCELED(409, "INVITATION_CANNOT_BE_CANCELED", "Invitation Cannot Be Canceled", "Only pending invitations can be canceled."),
     // 429 - Too Many Requests
     TOO_MANY_REQUESTS(429, "TOO_MANY_REQUESTS", "Too many requests", "You have exceeded the number of allowed requests. Please try again later."),
 

@@ -2,9 +2,11 @@ package com.finapp.backend.repository;
 
 import com.finapp.backend.model.Deposit;
 import com.finapp.backend.model.enums.TransactionType;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,4 +25,9 @@ public interface DepositRepository extends JpaRepository<Deposit, Long> {
 
     Page<Deposit> findByFundBoxId(Long fundBoxId, Pageable pageable);
     List<Deposit> findByFundBoxId(Long fundBoxId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE Deposit d SET d.fundBox = NULL WHERE d.user.id = :userId AND d.fundBox.id = :fundBoxId")
+    void unsetFundBoxForUserDeposits(@Param("userId") Long userId, @Param("fundBoxId") Long fundBoxId);
 }

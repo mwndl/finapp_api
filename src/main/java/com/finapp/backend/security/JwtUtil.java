@@ -39,15 +39,27 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public Integer extractTokenVersion(String token) {
+        return extractClaim(token, claims -> claims.get("tokenVersion", Integer.class));
+    }
+
+
+    public String generateToken(UserDetails userDetails, int tokenVersion) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("tokenVersion", tokenVersion);
         return createToken(claims, userDetails.getUsername());
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+
+    public boolean isTokenValid(String token, UserDetails userDetails, int currentTokenVersion) {
         final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        final Integer tokenVersion = extractTokenVersion(token);
+        return username.equals(userDetails.getUsername())
+                && tokenVersion != null
+                && tokenVersion == currentTokenVersion
+                && !isTokenExpired(token);
     }
+
 
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
