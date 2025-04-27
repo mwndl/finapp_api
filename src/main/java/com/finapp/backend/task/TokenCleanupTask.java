@@ -1,7 +1,7 @@
 package com.finapp.backend.task;
 
-import com.finapp.backend.repository.UserTokenRepository;
-import com.finapp.backend.model.UserToken;
+import com.finapp.backend.domain.repository.UserTokenRepository;
+import com.finapp.backend.domain.model.UserToken;
 import com.finapp.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

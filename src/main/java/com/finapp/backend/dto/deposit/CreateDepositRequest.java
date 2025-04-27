@@ -1,6 +1,6 @@
 package com.finapp.backend.dto.deposit;
 
-import com.finapp.backend.model.enums.TransactionType;
+import com.finapp.backend.domain.model.enums.TransactionType;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
