@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/user")
+@RequestMapping("api/v1/users")
 @RequiredArgsConstructor
 @Tag(name = "User", description = "Endpoints for managing user data and account")
 public class UserController {

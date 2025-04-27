@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/deposit")
+@RequestMapping("api/v1/deposits")
 @RequiredArgsConstructor
 @Tag(name = "Deposit", description = "Endpoints for managing deposits")
 public class DepositController {
