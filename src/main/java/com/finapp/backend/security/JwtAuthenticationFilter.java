@@ -1,8 +1,8 @@
 package com.finapp.backend.security;
 
 import com.finapp.backend.exception.*;
-import com.finapp.backend.model.UserToken;
-import com.finapp.backend.repository.UserTokenRepository;
+import com.finapp.backend.domain.model.UserToken;
+import com.finapp.backend.domain.repository.UserTokenRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

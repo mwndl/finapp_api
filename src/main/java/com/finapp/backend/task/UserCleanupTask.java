@@ -1,6 +1,6 @@
 package com.finapp.backend.task;
 
-import com.finapp.backend.repository.UserRepository;
+import com.finapp.backend.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

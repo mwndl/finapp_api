@@ -1,7 +1,7 @@
 package com.finapp.backend.security;
 
-import com.finapp.backend.model.User;
-import com.finapp.backend.repository.UserRepository;
+import com.finapp.backend.domain.model.User;
+import com.finapp.backend.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
