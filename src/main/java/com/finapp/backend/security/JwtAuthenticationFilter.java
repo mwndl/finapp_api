@@ -28,8 +28,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
     private final UserTokenRepository userTokenRepository;
-
-    @Autowired
     private HandlerExceptionResolver handlerExceptionResolver;
 
     @Override
