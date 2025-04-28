@@ -47,6 +47,7 @@ public enum ApiErrorCode {
     FUND_BOX_NOT_FOUND(404, "FUND_BOX_NOT_FOUND", "FundBox not found", "Unable to find requested FundBox"),
     USER_NOT_FOUND(404, "USER_NOT_FOUND", "User not found", "The user was not found in the database."),
     INVITATION_NOT_FOUND(404, "INVITATION_NOT_FOUND", "Invitation Not Found", "The invitation with the provided ID could not be found. Please check the invitation ID and try again."),
+    SESSION_NOT_FOUND(404, "SESSION_NOT_FOUND" , "Session not found" , "The session was not found in the database." ),
 
     // 409 - Conflict
     FUND_BOX_NAME_ALREADY_EXISTS(409, "FUND_BOX_NAME_ALREADY_EXISTS", "FundBox name must be unique", "The name provided is already in use, each FundBox must have a unique name per user"),
