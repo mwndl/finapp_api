@@ -39,6 +39,7 @@ public enum ApiErrorCode {
     ACCOUNT_LOCKED(403, "ACCOUNT_LOCKED", "Account is locked", "Your account is locked due to too many failed login attempts"),
     FORBIDDEN_COLLABORATOR_ADDITION(403, "FORBIDDEN_COLLABORATOR_ADDITION", "Forbidden Collaborator Addition", "Only the owner of the fund box can add collaborators."),
     FORBIDDEN_ACTION(403, "FORBIDDEN_ACTION", "Forbidden Action", "You do not have permission to perform this action."),
+    CANNOT_REVOKE_OWN_SESSION(403, "CANNOT_REVOKE_OWN_SESSION", "Cannot Revoke Own Session", "You cannot revoke your own active session through this method. Use the /logout endpoint to log out of your current session. This method is intended for revoking other active sessions."),
 
     // 404 - Not Found
     DEPOSIT_NOT_FOUND(404, "DEPOSIT_NOT_FOUND", "Deposit not found", "The requested deposit was not found"),
@@ -53,6 +54,7 @@ public enum ApiErrorCode {
     COLLABORATOR_ALREADY_INVITED(409, "COLLABORATOR_ALREADY_INVITED", "Collaborator Already Invited", "The user has already been invited to collaborate on this fund box. Please check the invitation status or send a new invitation."),
     INVITATION_ALREADY_ACCEPTED(409, "INVITATION_ALREADY_ACCEPTED", "Invitation Already Accepted", "The invitation has already been accepted. You cannot accept it again."),
     INVITATION_CANNOT_BE_CANCELED(409, "INVITATION_CANNOT_BE_CANCELED", "Invitation Cannot Be Canceled", "Only pending invitations can be canceled."),
+
     // 429 - Too Many Requests
     TOO_MANY_REQUESTS(429, "TOO_MANY_REQUESTS", "Too many requests", "You have exceeded the number of allowed requests. Please try again later."),
 
