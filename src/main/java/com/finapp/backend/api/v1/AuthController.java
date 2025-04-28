@@ -91,8 +91,8 @@ public class AuthController {
 
     @PostMapping("logout/{sessionId}")
     @Operation(
-            summary = "Revoke a specific session",
-            description = "Closes and revokes the token of another open session.",
+            summary = "Logout a specific session",
+            description = "Logout and revokes the token of another open session.",
             responses = {
                     @ApiResponse(responseCode = "204", description = "No Content - Session revoked successfully"),
                     @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to revoke this session"),
