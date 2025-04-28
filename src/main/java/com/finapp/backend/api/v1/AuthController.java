@@ -1,5 +1,6 @@
 package com.finapp.backend.api.v1;
 
+import com.finapp.backend.domain.service.SessionService;
 import com.finapp.backend.dto.auth.*;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
@@ -11,7 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final SessionService sessionService;
 
     @PostMapping("/register")
     @Operation(
@@ -79,8 +85,21 @@ public class AuthController {
             throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
 
         String accessToken = authorizationHeader.substring(7);
-        authService.revokeCurrentSession(accessToken);
+        sessionService.revokeCurrentSession(accessToken);
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/sessions")
+    @Operation(
+            summary = "Get active sessions",
+            description = "Returns a list of active user sessions",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Active sessions returned"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
+    )
+    public ResponseEntity<List<SessionInfo>> getActiveSessions(@AuthenticationPrincipal UserDetails userDetails) {
+        List<SessionInfo> activeSessions = sessionService.getActiveSessions(userDetails.getUsername());
+        return ResponseEntity.ok(activeSessions);
+    }
 }
