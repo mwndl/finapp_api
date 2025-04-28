@@ -89,6 +89,28 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("logout/{sessionId}")
+    @Operation(
+            summary = "Revoke a specific session",
+            description = "Closes and revokes the token of another open session.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Session revoked successfully"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to revoke this session"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Session not found")
+            }
+    )
+    public ResponseEntity<Void> logoutById(
+            @PathVariable Long sessionId,
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest httpRequest
+    ) {
+        String authorizationHeader = httpRequest.getHeader("Authorization");
+        String currentAccessToken = authorizationHeader.substring(7);
+
+        sessionService.revokeSpecificSession(sessionId, userDetails.getUsername(), currentAccessToken);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/sessions")
     @Operation(
             summary = "Get active sessions",
