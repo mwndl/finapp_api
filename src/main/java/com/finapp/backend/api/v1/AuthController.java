@@ -120,8 +120,11 @@ public class AuthController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
-    public ResponseEntity<List<SessionInfo>> getActiveSessions(@AuthenticationPrincipal UserDetails userDetails) {
-        List<SessionInfo> activeSessions = sessionService.getActiveSessions(userDetails.getUsername());
+    public ResponseEntity<List<SessionInfo>> getActiveSessions(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest httpRequest) {
+        String authorizationHeader = httpRequest.getHeader("Authorization");
+        String currentAccessToken = authorizationHeader.substring(7);
+
+        List<SessionInfo> activeSessions = sessionService.getActiveSessions(userDetails.getUsername(), currentAccessToken);
         return ResponseEntity.ok(activeSessions);
     }
 }
