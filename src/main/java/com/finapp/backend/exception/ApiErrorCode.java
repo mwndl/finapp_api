@@ -33,6 +33,8 @@ public enum ApiErrorCode {
     EXPIRED_SESSION(401, "EXPIRED_SESSION", "Session expired", "Your access token has expired. Please refresh it or log in again to continue."),
     EXPIRED_REFRESH_TOKEN(401, "EXPIRED_REFRESH_TOKEN", "Expired refresh token", "The refresh token provided is expired. Please login again to continue." ),
     REVOKED_REFRESH_TOKEN(401, "REVOKED_REFRESH_TOKEN", "Revoked Refresh token", "The refresh token provided has been revoked and is no longer valid. Please log in again to continue." ),
+    INVALID_TOKEN(401, "INVALID_TOKEN" , "Invalid token" , "The token provided is invalid" ),
+    EXPIRED_TOKEN(401,"EXPIRED_TOKEN", "Expired Token", "The token provided is expired and is no longer valid." ),
 
     // 403 - Forbidden
     UNAUTHORIZED_ACCESS(403, "UNAUTHORIZED_ACCESS", "Unauthorized access", "You are not authorized to access this resource."),
@@ -55,6 +57,7 @@ public enum ApiErrorCode {
     COLLABORATOR_ALREADY_INVITED(409, "COLLABORATOR_ALREADY_INVITED", "Collaborator Already Invited", "The user has already been invited to collaborate on this fund box. Please check the invitation status or send a new invitation."),
     INVITATION_ALREADY_ACCEPTED(409, "INVITATION_ALREADY_ACCEPTED", "Invitation Already Accepted", "The invitation has already been accepted. You cannot accept it again."),
     INVITATION_CANNOT_BE_CANCELED(409, "INVITATION_CANNOT_BE_CANCELED", "Invitation Cannot Be Canceled", "Only pending invitations can be canceled."),
+    ALREADY_USED_TOKEN(409, "ALREADY_USED_TOKEN", "Already Used Token", "The token provided has already been used and is no longer valid."),
 
     // 429 - Too Many Requests
     TOO_MANY_REQUESTS(429, "TOO_MANY_REQUESTS", "Too many requests", "You have exceeded the number of allowed requests. Please try again later."),
