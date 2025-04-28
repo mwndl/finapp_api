@@ -11,4 +11,5 @@ public class SessionInfo {
     private boolean isActive;
     private String ipAddress;
     private String deviceInfo;
+    private boolean isCurrentSession;
 }
