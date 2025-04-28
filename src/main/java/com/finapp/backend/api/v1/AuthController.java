@@ -36,8 +36,8 @@ public class AuthController {
                     @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
             }
     )
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.register(request, httpRequest));
     }
 
     @PostMapping("/login")
@@ -50,8 +50,8 @@ public class AuthController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.login(request, httpRequest));
     }
 
     @PostMapping("/refresh")
