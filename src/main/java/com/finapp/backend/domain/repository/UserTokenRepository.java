@@ -19,4 +19,6 @@ public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
 
     Optional<UserToken> findByAccessTokenAndRevokedFalse(String accessToken);
 
+    Optional<UserToken> findByIdAndRevokedFalse(Long sessionId);
+
 }
