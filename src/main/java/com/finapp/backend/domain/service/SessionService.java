@@ -20,17 +20,17 @@ public class SessionService {
     private final UserTokenRepository userTokenRepository;
     private final UserUtilService userUtilService;
 
-    public List<SessionInfo> getActiveSessions(String email) {
+    public List<SessionInfo> getActiveSessions(String email, String currentAccessToken) {
         User user = userUtilService.getActiveUserByEmail(email);
         List<UserToken> tokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
         return tokens.stream()
                 .map(token -> new SessionInfo(
-                        String.valueOf(user.getId()),
                         token.getId().toString(),
                         token.getCreatedAt().toString(),
                         !token.isRevoked(),
                         token.getDeviceIp(),
-                        token.getDeviceInfo()
+                        token.getDeviceInfo(),
+                        token.getAccessToken().equals(currentAccessToken)
                 ))
                 .toList();
     }
@@ -43,6 +43,27 @@ public class SessionService {
         userToken.setUpdatedAt(new Date());
 
         userTokenRepository.save(userToken);
+    }
+
+    public void revokeSpecificSession(Long sessionId, String email, String currentAccessToken) {
+        User user = userUtilService.getActiveUserByEmail(email);
+        UserToken userSession = getActiveSessionById(sessionId);
+
+        if (!userSession.getUser().equals(user))
+            throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
+
+        if (userSession.getAccessToken().equals(currentAccessToken))
+            throw new ApiException(ApiErrorCode.CANNOT_REVOKE_OWN_SESSION);
+
+        userSession.setRevoked(true);
+        userSession.setUpdatedAt(new Date());
+
+        userTokenRepository.save(userSession);
+    }
+
+    public UserToken getActiveSessionById(Long sessionId) {
+        return userTokenRepository.findByIdAndRevokedFalse(sessionId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.SESSION_NOT_FOUND));
     }
 
     public void revokeAllUserSessions(User user) {
