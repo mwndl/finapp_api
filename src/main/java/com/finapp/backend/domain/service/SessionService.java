@@ -28,7 +28,9 @@ public class SessionService {
                         String.valueOf(user.getId()),
                         token.getId().toString(),
                         token.getCreatedAt().toString(),
-                        !token.isRevoked()
+                        !token.isRevoked(),
+                        token.getDeviceIp(),
+                        token.getDeviceInfo()
                 ))
                 .toList();
     }
