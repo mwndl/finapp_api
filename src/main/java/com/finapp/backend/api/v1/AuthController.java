@@ -69,7 +69,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
-    @PostMapping("/logout")
+    @DeleteMapping("/logout")
     @Operation(
             summary = "Logout user",
             description = "Invalidates the current access token and refresh token",
@@ -89,7 +89,7 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("logout/{sessionId}")
+    @DeleteMapping("logout/{sessionId}")
     @Operation(
             summary = "Logout a specific session",
             description = "Logout and revokes the token of another open session.",
@@ -114,7 +114,7 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/logout-all")
+    @DeleteMapping("/logout-all")
     @Operation(
             summary = "Logout all sessions",
             description = "Invalidates all the active sessions",
