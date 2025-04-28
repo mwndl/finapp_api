@@ -166,29 +166,8 @@ public class AuthService {
         userTokenRepository.save(userToken);
     }
 
-
     public boolean isRefreshTokenRevoked(String refreshToken) {
         return userTokenRepository.findByRefreshTokenAndRevokedTrue(refreshToken).isPresent();
     }
 
-    public void revokeCurrentSession(String accessToken) {
-        UserToken userToken = userTokenRepository.findByAccessTokenAndRevokedFalse(accessToken)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN));
-
-        userToken.setRevoked(true);
-        userToken.setUpdatedAt(new Date());
-
-        userTokenRepository.save(userToken);
-    }
-
-    public void revokeAllUserSessions(User user) {
-        List<UserToken> activeTokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
-
-        for (UserToken token : activeTokens) {
-            token.setRevoked(true);
-            token.setUpdatedAt(new Date());
-        }
-
-        userTokenRepository.saveAll(activeTokens);
-    }
 }
