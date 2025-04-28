@@ -8,7 +8,6 @@ import lombok.Data;
 public class SessionInfo {
     private String sessionId;
     private String createdAt;
-    private boolean isActive;
     private String ipAddress;
     private String deviceInfo;
     private boolean isCurrentSession;

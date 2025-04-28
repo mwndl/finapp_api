@@ -27,7 +27,6 @@ public class SessionService {
                 .map(token -> new SessionInfo(
                         token.getId().toString(),
                         token.getCreatedAt().toString(),
-                        !token.isRevoked(),
                         token.getDeviceIp(),
                         token.getDeviceInfo(),
                         token.getAccessToken().equals(currentAccessToken)
