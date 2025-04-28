@@ -65,6 +65,20 @@ public class SessionService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.SESSION_NOT_FOUND));
     }
 
+    public void logoutAllSessions(String email,String currentAccessToken) {
+        User user = userUtilService.getActiveUserByEmail(email);
+        List<UserToken> activeTokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
+
+        for (UserToken token : activeTokens) {
+            if (!token.getAccessToken().equals(currentAccessToken)) {
+                token.setRevoked(true);
+                token.setUpdatedAt(new Date());
+            }
+        }
+
+        userTokenRepository.saveAll(activeTokens);
+    }
+
     public void revokeAllUserSessions(User user) {
         List<UserToken> activeTokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
 
