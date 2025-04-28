@@ -105,6 +105,9 @@ public class AuthController {
             HttpServletRequest httpRequest
     ) {
         String authorizationHeader = httpRequest.getHeader("Authorization");
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
         String currentAccessToken = authorizationHeader.substring(7);
 
         sessionService.revokeSpecificSession(sessionId, userDetails.getUsername(), currentAccessToken);
@@ -141,6 +144,8 @@ public class AuthController {
     )
     public ResponseEntity<List<SessionInfo>> getActiveSessions(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest httpRequest) {
         String authorizationHeader = httpRequest.getHeader("Authorization");
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
         String currentAccessToken = authorizationHeader.substring(7);
 
         List<SessionInfo> activeSessions = sessionService.getActiveSessions(userDetails.getUsername(), currentAccessToken);
