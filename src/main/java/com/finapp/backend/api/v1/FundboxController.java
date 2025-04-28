@@ -21,7 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/fundbox")
+@RequestMapping("api/v1/fundboxes")
 @RequiredArgsConstructor
 @Tag(name = "FundBox", description = "Endpoints for managing fund boxes and collaborators")
 public class FundboxController {

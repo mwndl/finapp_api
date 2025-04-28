@@ -1,4 +1,4 @@
-package com.finapp.backend.domain.service.managers;
+package com.finapp.backend.domain.service.utils;
 
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
@@ -29,34 +29,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class FundBoxManager {
+public class FundBoxUtilService {
 
     private final UserRepository userRepository;
     private final FundBoxRepository fundBoxRepository;
     private final DepositRepository depositRepository;
     private final FundBoxInvitationRepository fundBoxInvitationRepository;
-
-    public User getActiveUserByEmail(String email) {
-        User user = getUserByEmail(email);
-        checkUserStatus(user);
-        return user;
-    }
-
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-    }
-
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
-    }
-
-    public void checkUserStatus(User user) {
-        if (!Boolean.TRUE.equals(user.getActive())) {
-            throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
-        }
-    }
+    private final UserUtilService userUtilService;
 
     public boolean fundBoxExists(Long userId, String name) {
         return fundBoxRepository.existsByOwnerIdAndName(userId, name.trim());
@@ -133,7 +112,7 @@ public class FundBoxManager {
         FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
 
-        User user = getUserByEmail(email);
+        User user = userUtilService.getUserByEmail(email);
         if (!invitation.getInvitee().getId().equals(user.getId())) {
             throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
         }

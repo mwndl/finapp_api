@@ -10,6 +10,7 @@ import com.finapp.backend.domain.model.UserToken;
 import com.finapp.backend.domain.repository.UserRepository;
 import com.finapp.backend.domain.repository.UserTokenRepository;
 import com.finapp.backend.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,7 +32,7 @@ public class AuthService {
     private final UserTokenRepository userTokenRepository;
     private final UserDetailsService userDetailsService;
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         if (userRepository.findByEmail(request.getEmail()).isPresent())
             throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
 
@@ -42,10 +43,10 @@ public class AuthService {
         user.setActive(true);
         userRepository.save(user);
 
-        return generateAndPersistTokens(user);
+        return generateAndPersistTokens(user, httpRequest);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
 
@@ -59,7 +60,7 @@ public class AuthService {
         }
 
         authenticateUser(request);
-        return generateAndPersistTokens(user);
+        return generateAndPersistTokens(user, httpRequest);
     }
 
     public AuthResponse refreshToken(String refreshToken) {
@@ -135,11 +136,11 @@ public class AuthService {
         userTokenRepository.save(userToken);
     }
 
-    private AuthResponse generateAndPersistTokens(User user) {
+    private AuthResponse generateAndPersistTokens(User user, HttpServletRequest request) {
         String accessToken = generateAccessTokenForUser(user);
         String refreshToken = generateRefreshTokenForUser(user);
 
-        saveTokens(user, accessToken, refreshToken);
+        saveTokens(user, accessToken, refreshToken, request);
 
         return new AuthResponse(
                 accessToken,
@@ -149,7 +150,7 @@ public class AuthService {
         );
     }
 
-    private void saveTokens(User user, String accessToken, String refreshToken) {
+    private void saveTokens(User user, String accessToken, String refreshToken, HttpServletRequest request) {
         Date accessTokenExpiration = jwtUtil.extractExpiration(accessToken);
         Date refreshTokenExpiration = jwtUtil.extractExpiration(refreshToken);
 
@@ -163,32 +164,17 @@ public class AuthService {
         userToken.setCreatedAt(new Date());
         userToken.setUpdatedAt(new Date());
 
+        String deviceInfo = request.getHeader("User-Agent");
+        String deviceIp = request.getRemoteAddr();
+
+        userToken.setDeviceInfo(deviceInfo);
+        userToken.setDeviceIp(deviceIp);
+
         userTokenRepository.save(userToken);
     }
-
 
     public boolean isRefreshTokenRevoked(String refreshToken) {
         return userTokenRepository.findByRefreshTokenAndRevokedTrue(refreshToken).isPresent();
     }
 
-    public void revokeCurrentSession(String accessToken) {
-        UserToken userToken = userTokenRepository.findByAccessTokenAndRevokedFalse(accessToken)
-                .orElseThrow(() -> new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN));
-
-        userToken.setRevoked(true);
-        userToken.setUpdatedAt(new Date());
-
-        userTokenRepository.save(userToken);
-    }
-
-    public void revokeAllUserSessions(User user) {
-        List<UserToken> activeTokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
-
-        for (UserToken token : activeTokens) {
-            token.setRevoked(true);
-            token.setUpdatedAt(new Date());
-        }
-
-        userTokenRepository.saveAll(activeTokens);
-    }
 }

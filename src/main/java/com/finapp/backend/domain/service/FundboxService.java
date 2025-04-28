@@ -2,6 +2,7 @@ package com.finapp.backend.domain.service;
 
 import com.finapp.backend.domain.model.FundBox;
 import com.finapp.backend.domain.model.User;
+import com.finapp.backend.domain.service.utils.UserUtilService;
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.fundbox.*;
 import com.finapp.backend.dto.user.InviteResponse;
@@ -11,7 +12,7 @@ import com.finapp.backend.domain.model.enums.InvitationStatus;
 import com.finapp.backend.domain.repository.DepositRepository;
 import com.finapp.backend.domain.repository.FundBoxInvitationRepository;
 import com.finapp.backend.domain.repository.FundBoxRepository;
-import com.finapp.backend.domain.service.managers.FundBoxManager;
+import com.finapp.backend.domain.service.utils.FundBoxUtilService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,10 +30,11 @@ public class FundboxService {
     private final FundBoxRepository fundBoxRepository;
     private final DepositRepository depositRepository;
     private final FundBoxInvitationRepository fundBoxInvitationRepository;
-    private final FundBoxManager fundBoxManager;
+    private final FundBoxUtilService fundBoxManager;
+    private final UserUtilService userUtilService;
 
     public FundBoxResponse createFundBox(String email, CreateFundBoxRequest request) {
-        User user = fundBoxManager.getActiveUserByEmail(email);
+        User user = userUtilService.getActiveUserByEmail(email);
 
         if (fundBoxManager.fundBoxExists(user.getId(), request.name()))
             throw new ApiException(ApiErrorCode.FUND_BOX_NAME_ALREADY_EXISTS);
@@ -44,7 +46,7 @@ public class FundboxService {
     }
 
     public ResponseEntity<Page<FundBoxResponse>> listUserFundBoxes(String email, Pageable pageable) {
-        User user = fundBoxManager.getActiveUserByEmail(email);
+        User user = userUtilService.getActiveUserByEmail(email);
 
         Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerIdOrCollaboratorsContaining(user.getId(), pageable);
 
@@ -58,7 +60,7 @@ public class FundboxService {
 
 
     public FundBoxDetailsResponse getFundBoxDetails(Long fundBoxId, String email, Pageable pageable) {
-        User user = fundBoxManager.getActiveUserByEmail(email);
+        User user = userUtilService.getActiveUserByEmail(email);
 
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
         BigDecimal balance = fundBoxManager.calculateBalance(fundBoxId);
@@ -93,7 +95,7 @@ public class FundboxService {
     }
 
     public FundBoxResponse updateFundBox(Long fundBoxId, String email, UpdateFundBoxRequest request) {
-        User user = fundBoxManager.getActiveUserByEmail(email);
+        User user = userUtilService.getActiveUserByEmail(email);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
 
         if (request.getName() != null && !request.getName().trim().isEmpty())
@@ -108,7 +110,7 @@ public class FundboxService {
     }
 
     public void deleteFundBox(Long fundBoxId, String email) {
-        User user = fundBoxManager.getActiveUserByEmail(email);
+        User user = userUtilService.getActiveUserByEmail(email);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
 
         depositRepository.findByFundBoxId(fundBoxId).forEach(deposit -> {
@@ -120,10 +122,10 @@ public class FundboxService {
     }
 
     public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
-        User owner = fundBoxManager.getUserByEmail(email);
-        fundBoxManager.checkUserStatus(owner);
+        User owner = userUtilService.getUserByEmail(email);
+        userUtilService.checkUserStatus(owner);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, owner);
-        User collaborator = fundBoxManager.getUserById(collaboratorId);
+        User collaborator = userUtilService.getUserById(collaboratorId);
 
         boolean removed = fundBox.getCollaborators().removeIf(c -> c.getUser().getId().equals(collaborator.getId()));
         if (!removed)
@@ -135,8 +137,8 @@ public class FundboxService {
     }
 
     public void leaveFundBox(Long fundBoxId, String email) {
-        User collaborator = fundBoxManager.getUserByEmail(email);
-        fundBoxManager.checkUserStatus(collaborator);
+        User collaborator = userUtilService.getUserByEmail(email);
+        userUtilService.checkUserStatus(collaborator);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, collaborator);
 
         if (fundBox.getOwner().getId().equals(collaborator.getId()))

@@ -38,4 +38,10 @@ public class UserToken {
 
     @Column(name = "updated_at", nullable = false)
     private Date updatedAt;
+
+    @Column(name = "device_info")
+    private String deviceInfo;
+
+    @Column(name = "device_ip")
+    private String deviceIp;
 }

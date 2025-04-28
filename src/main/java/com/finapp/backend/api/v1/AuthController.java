@@ -1,5 +1,6 @@
 package com.finapp.backend.api.v1;
 
+import com.finapp.backend.domain.service.SessionService;
 import com.finapp.backend.dto.auth.*;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
@@ -11,7 +12,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final SessionService sessionService;
 
     @PostMapping("/register")
     @Operation(
@@ -30,8 +36,8 @@ public class AuthController {
                     @ApiResponse(responseCode = "400", description = "Bad Request - Validation errors"),
             }
     )
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.register(request, httpRequest));
     }
 
     @PostMapping("/login")
@@ -44,8 +50,8 @@ public class AuthController {
                     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
             }
     )
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest) {
+        return ResponseEntity.ok(authService.login(request, httpRequest));
     }
 
     @PostMapping("/refresh")
@@ -63,7 +69,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.refreshToken(request.getRefreshToken()));
     }
 
-    @PostMapping("/logout")
+    @DeleteMapping("/logout")
     @Operation(
             summary = "Logout user",
             description = "Invalidates the current access token and refresh token",
@@ -79,8 +85,70 @@ public class AuthController {
             throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
 
         String accessToken = authorizationHeader.substring(7);
-        authService.revokeCurrentSession(accessToken);
+        sessionService.revokeCurrentSession(accessToken);
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("logout/{sessionId}")
+    @Operation(
+            summary = "Logout a specific session",
+            description = "Logout and revokes the token of another open session.",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Session revoked successfully"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to revoke this session"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Session not found")
+            }
+    )
+    public ResponseEntity<Void> logoutById(
+            @PathVariable Long sessionId,
+            @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest httpRequest
+    ) {
+        String authorizationHeader = httpRequest.getHeader("Authorization");
+
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
+        String currentAccessToken = authorizationHeader.substring(7);
+
+        sessionService.revokeSpecificSession(sessionId, userDetails.getUsername(), currentAccessToken);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/logout-all")
+    @Operation(
+            summary = "Logout all sessions",
+            description = "Invalidates all the active sessions",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Logout successful"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid or missing Authorization header"),
+            }
+    )
+    public ResponseEntity<Void> logoutAllSessions(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest httpRequest) {
+        String authorizationHeader = httpRequest.getHeader("Authorization");
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
+        String currentAccessToken = authorizationHeader.substring(7);
+
+        sessionService.logoutAllSessions(userDetails.getUsername(), currentAccessToken);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/sessions")
+    @Operation(
+            summary = "Get active sessions",
+            description = "Returns a list of active user sessions",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Active sessions returned"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token")
+            }
+    )
+    public ResponseEntity<List<SessionInfo>> getActiveSessions(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest httpRequest) {
+        String authorizationHeader = httpRequest.getHeader("Authorization");
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
+        String currentAccessToken = authorizationHeader.substring(7);
+
+        List<SessionInfo> activeSessions = sessionService.getActiveSessions(userDetails.getUsername(), currentAccessToken);
+        return ResponseEntity.ok(activeSessions);
+    }
 }
