@@ -111,6 +111,25 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/logout-all")
+    @Operation(
+            summary = "Logout all sessions",
+            description = "Invalidates all the active sessions",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "No Content - Logout successful"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid or missing Authorization header"),
+            }
+    )
+    public ResponseEntity<Void> logoutAllSessions(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest httpRequest) {
+        String authorizationHeader = httpRequest.getHeader("Authorization");
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer "))
+            throw new ApiException(ApiErrorCode.INVALID_ACCESS_TOKEN);
+        String currentAccessToken = authorizationHeader.substring(7);
+
+        sessionService.logoutAllSessions(userDetails.getUsername(), currentAccessToken);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/sessions")
     @Operation(
             summary = "Get active sessions",
