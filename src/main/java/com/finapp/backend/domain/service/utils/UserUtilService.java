@@ -1,6 +1,7 @@
 package com.finapp.backend.domain.service.utils;
 
 import com.finapp.backend.domain.model.User;
+import com.finapp.backend.domain.model.enums.UserStatus;
 import com.finapp.backend.domain.repository.UserRepository;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
@@ -32,9 +33,12 @@ public class UserUtilService {
     }
 
     public void checkUserStatus(User user) {
-        if (!Boolean.TRUE.equals(user.getActive())) {
+        if (user.getStatus() == UserStatus.PENDING_VERIFICATION)
+            throw new ApiException(ApiErrorCode.ACCOUNT_NOT_VERIFIED);
+        if (user.getStatus() == UserStatus.DEACTIVATION_REQUESTED)
             throw new ApiException(ApiErrorCode.ACCOUNT_DEACTIVATED);
-        }
+        if (user.getStatus() == UserStatus.LOCKED)
+            throw new ApiException(ApiErrorCode.ACCOUNT_LOCKED);
     }
 
 }

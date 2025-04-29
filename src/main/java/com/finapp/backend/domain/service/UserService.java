@@ -1,6 +1,7 @@
 package com.finapp.backend.domain.service;
 
 import com.finapp.backend.domain.event.PasswordChangedEvent;
+import com.finapp.backend.domain.model.enums.UserStatus;
 import com.finapp.backend.domain.service.utils.UserUtilService;
 import com.finapp.backend.dto.user.UserResponse;
 import com.finapp.backend.exception.ApiErrorCode;
@@ -57,7 +58,7 @@ public class UserService {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
-        user.setActive(false);
+        user.setStatus(UserStatus.DEACTIVATION_REQUESTED);
         user.setDeletionRequestedAt(LocalDateTime.now());
         userRepository.save(user);
     }
