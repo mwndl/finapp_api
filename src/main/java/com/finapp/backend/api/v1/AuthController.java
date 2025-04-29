@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -103,7 +104,7 @@ public class AuthController {
             }
     )
     public ResponseEntity<Void> logoutById(
-            @PathVariable Long sessionId,
+            @PathVariable UUID sessionId,
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest httpRequest
     ) {

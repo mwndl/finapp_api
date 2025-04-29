@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +56,7 @@ public class DepositService {
         return ResponseEntity.ok(depositResponses);
     }
 
-    public DepositResponse getDepositById(Long depositId, String email) {
+    public DepositResponse getDepositById(UUID depositId, String email) {
         User user = userUtilService.getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
@@ -71,7 +72,7 @@ public class DepositService {
         return new DepositSummaryResponse(balance, entryTotal, exitTotal);
     }
 
-    public DepositResponse updateDeposit(Long depositId, String email, UpdateDepositRequest request) {
+    public DepositResponse updateDeposit(UUID depositId, String email, UpdateDepositRequest request) {
         User user = userUtilService.getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
@@ -81,7 +82,7 @@ public class DepositService {
         return mapToDepositResponse(deposit);
     }
 
-    public void deleteDeposit(Long depositId, String email) {
+    public void deleteDeposit(UUID depositId, String email) {
         User user = userUtilService.getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
@@ -142,7 +143,7 @@ public class DepositService {
         return deposit;
     }
 
-    private FundBox validateAndGetFundBox(Long fundBoxId, String email) {
+    private FundBox validateAndGetFundBox(UUID fundBoxId, String email) {
         if (fundBoxId == null)
             throw new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND);
 
@@ -155,7 +156,7 @@ public class DepositService {
         return fundBox;
     }
 
-    private void updateDepositField(Deposit deposit, BigDecimal amount, LocalDate date, TransactionType transactionType, String description, Long fundBoxId, String email) {
+    private void updateDepositField(Deposit deposit, BigDecimal amount, LocalDate date, TransactionType transactionType, String description, UUID fundBoxId, String email) {
         if (amount != null) updateAmount(deposit, amount);
         if (date != null) updateDate(deposit, date);
         if (transactionType != null) updateTransactionType(deposit, transactionType);
@@ -230,7 +231,7 @@ public class DepositService {
         deposit.setDescription(description.trim());
     }
 
-    private void updateFundBox(Deposit deposit, Long fundBoxId, String email) {
+    private void updateFundBox(Deposit deposit, UUID fundBoxId, String email) {
         if (fundBoxId == null) {
             deposit.setFundBox(null);
             return;

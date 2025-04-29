@@ -7,6 +7,8 @@ import com.finapp.backend.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserUtilService {
@@ -24,7 +26,7 @@ public class UserUtilService {
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
     }
 
-    public User getUserById(Long userId) {
+    public User getUserById(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
     }

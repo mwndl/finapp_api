@@ -20,6 +20,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("api/v1/fundboxes")
 @RequiredArgsConstructor
@@ -77,7 +79,7 @@ public class FundboxController {
             }
     )
     public ResponseEntity<FundBoxDetailsResponse> getFundBoxById(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal UserDetails userDetails
@@ -101,7 +103,7 @@ public class FundboxController {
             }
     )
     public ResponseEntity<FundBoxResponse> updateFundBox(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateFundBoxRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
@@ -122,7 +124,7 @@ public class FundboxController {
             }
     )
     public ResponseEntity<Void> deleteFundBox(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         fundBoxService.deleteFundBox(id, userDetails.getUsername());
@@ -141,8 +143,8 @@ public class FundboxController {
             }
     )
     public ResponseEntity<Void> removeCollaborator(
-            @PathVariable Long id,
-            @PathVariable Long userId,
+            @PathVariable UUID id,
+            @PathVariable UUID userId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         fundBoxService.removeCollaborator(id, userDetails.getUsername(), userId);
@@ -161,7 +163,7 @@ public class FundboxController {
             }
     )
     public ResponseEntity<Void> leaveFundBox(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         fundBoxService.leaveFundBox(id, userDetails.getUsername());

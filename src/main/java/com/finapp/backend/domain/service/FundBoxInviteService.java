@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,7 @@ public class FundBoxInviteService {
     private final FundBoxRepository fundBoxRepository;
     private final UserUtilService userUtilService;
 
-    public void inviteCollaborator(Long fundBoxId, String email, Long collaboratorId) {
+    public void inviteCollaborator(UUID fundBoxId, String email, UUID collaboratorId) {
         User inviter = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(inviter);
 
@@ -68,7 +69,7 @@ public class FundBoxInviteService {
                 .map(fundBoxManager::toInviteResponse);
     }
 
-    public void cancelInvitation(Long invitationId, String email) {
+    public void cancelInvitation(UUID invitationId, String email) {
         FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
 
@@ -88,7 +89,7 @@ public class FundBoxInviteService {
         return invites.map(fundBoxManager::toInviteResponse);
     }
 
-    public void acceptInvitation(Long invitationId, String email) {
+    public void acceptInvitation(UUID invitationId, String email) {
         FundBoxInvitation invitation = fundBoxManager.validateInvitationForUser(invitationId, email);
 
         if (invitation.getStatus() == InvitationStatus.ACCEPTED)
@@ -104,7 +105,7 @@ public class FundBoxInviteService {
         fundBoxInvitationRepository.delete(invitation);
     }
 
-    public void declineInvitation(Long invitationId, String email) {
+    public void declineInvitation(UUID invitationId, String email) {
         FundBoxInvitation invitation = fundBoxManager.validateInvitationForUser(invitationId, email);
         fundBoxInvitationRepository.delete(invitation);
     }

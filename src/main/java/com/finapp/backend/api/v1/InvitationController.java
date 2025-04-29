@@ -16,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("api/v1/invites")
 @RequiredArgsConstructor
@@ -75,7 +77,7 @@ public class InvitationController {
             }
     )
     public ResponseEntity<Void> acceptInvitation(
-            @PathVariable Long invitationId,
+            @PathVariable UUID invitationId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         fundBoxInviteService.acceptInvitation(invitationId, userDetails.getUsername());
@@ -94,7 +96,7 @@ public class InvitationController {
             }
     )
     public ResponseEntity<Void> declineInvitation(
-            @PathVariable Long invitationId,
+            @PathVariable UUID invitationId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         fundBoxInviteService.declineInvitation(invitationId, userDetails.getUsername());
@@ -114,8 +116,8 @@ public class InvitationController {
             }
     )
     public ResponseEntity<Void> inviteCollaborator(
-            @PathVariable Long fundBoxId,
-            @PathVariable Long userId,
+            @PathVariable UUID fundBoxId,
+            @PathVariable UUID userId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         fundBoxInviteService.inviteCollaborator(fundBoxId, userDetails.getUsername(), userId);
@@ -135,7 +137,7 @@ public class InvitationController {
             }
     )
     public ResponseEntity<Void> cancelInvitation(
-            @PathVariable Long invitationId,
+            @PathVariable UUID invitationId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         fundBoxInviteService.cancelInvitation(invitationId, userDetails.getUsername());

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 public class UpdateDepositRequest {
@@ -12,6 +13,6 @@ public class UpdateDepositRequest {
     private LocalDate date;
     private String description;
     private TransactionType transactionType;
-    private Long fundBoxId;
+    private UUID fundBoxId;
 }
 

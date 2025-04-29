@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,7 @@ public class SessionService {
         userTokenRepository.save(userToken);
     }
 
-    public void revokeSpecificSession(Long sessionId, String email, String currentAccessToken) {
+    public void revokeSpecificSession(UUID sessionId, String email, String currentAccessToken) {
         User user = userUtilService.getActiveUserByEmail(email);
         UserToken userSession = getActiveSessionById(sessionId);
 
@@ -60,7 +61,7 @@ public class SessionService {
         userTokenRepository.save(userSession);
     }
 
-    public UserToken getActiveSessionById(Long sessionId) {
+    public UserToken getActiveSessionById(UUID sessionId) {
         return userTokenRepository.findByIdAndRevokedFalse(sessionId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.SESSION_NOT_FOUND));
     }

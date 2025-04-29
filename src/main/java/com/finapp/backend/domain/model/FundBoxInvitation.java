@@ -3,15 +3,21 @@ package com.finapp.backend.domain.model;
 import com.finapp.backend.domain.model.enums.InvitationStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcType;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Data
 public class FundBoxInvitation {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @JdbcType(org.hibernate.type.descriptor.jdbc.CharJdbcType.class)
+    @Column(updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "fund_box_id")

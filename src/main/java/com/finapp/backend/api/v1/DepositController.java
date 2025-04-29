@@ -20,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/deposits")
@@ -89,7 +90,7 @@ public class DepositController {
             }
     )
     public ResponseEntity<DepositResponse> getDepositById(
-            @PathVariable Long depositId,
+            @PathVariable UUID depositId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         DepositResponse deposit = depositService.getDepositById(depositId, userDetails.getUsername());
@@ -126,7 +127,7 @@ public class DepositController {
             }
     )
     public ResponseEntity<DepositResponse> updateDeposit(
-            @PathVariable Long depositId,
+            @PathVariable UUID depositId,
             @RequestBody @Valid UpdateDepositRequest request,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
@@ -145,7 +146,7 @@ public class DepositController {
             }
     )
     public ResponseEntity<Void> deleteDeposit(
-            @PathVariable Long depositId,
+            @PathVariable UUID depositId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         depositService.deleteDeposit(depositId, userDetails.getUsername());
