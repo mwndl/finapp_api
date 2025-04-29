@@ -23,6 +23,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
     private final UserUtilService userUtilService;
+    private final SessionService sessionService;
 
     public UserResponse getUserInfo(String email) {
         User user = userUtilService.getUserByEmail(email);
@@ -61,6 +62,8 @@ public class UserService {
         user.setStatus(UserStatus.DEACTIVATION_REQUESTED);
         user.setDeletionRequestedAt(LocalDateTime.now());
         userRepository.save(user);
+
+        sessionService.revokeAllUserSessions(user);
     }
 
     // aux methods
