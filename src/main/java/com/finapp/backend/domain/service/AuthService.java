@@ -1,5 +1,6 @@
 package com.finapp.backend.domain.service;
 
+import com.finapp.backend.domain.model.enums.UserStatus;
 import com.finapp.backend.dto.auth.AuthResponse;
 import com.finapp.backend.dto.auth.LoginRequest;
 import com.finapp.backend.dto.auth.RegisterRequest;
@@ -40,7 +41,7 @@ public class AuthService {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setActive(true);
+        user.setStatus(UserStatus.ACTIVE); // replace by 'UserStatus.PENDING_VERIFICATION' when the email logic is completed
         userRepository.save(user);
 
         return generateAndPersistTokens(user, httpRequest);
@@ -50,11 +51,12 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.AUTH_EMAIL_NOT_FOUND));
 
-        if (!user.getActive()) {
+        // reactivates if it was in the process of being deleted
+        if (user.getStatus() == UserStatus.DEACTIVATION_REQUESTED) {
             if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
                 throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
 
-            user.setActive(true); // reactivates if it was in the process of being deleted
+            user.setStatus(UserStatus.ACTIVE);
             user.setDeletionRequestedAt(null);
             userRepository.save(user);
         }
@@ -111,7 +113,9 @@ public class AuthService {
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
                 .roles("USER")
-                .accountLocked(!user.getActive())
+                .accountLocked(
+                        user.getStatus() == UserStatus.DEACTIVATION_REQUESTED || user.getStatus() == UserStatus.LOCKED
+                )
                 .build();
     }
 
