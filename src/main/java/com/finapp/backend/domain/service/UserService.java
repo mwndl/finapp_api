@@ -27,7 +27,7 @@ public class UserService {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
-        return new UserResponse(user.getName(), user.getEmail());
+        return new UserResponse(user.getId(), user.getName(), user.getEmail());
     }
 
     public void updateUserData(String email, String newName) {
