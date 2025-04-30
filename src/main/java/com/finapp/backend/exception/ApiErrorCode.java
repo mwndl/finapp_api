@@ -43,6 +43,7 @@ public enum ApiErrorCode {
     FORBIDDEN_COLLABORATOR_ADDITION(403, "FORBIDDEN_COLLABORATOR_ADDITION", "Forbidden Collaborator Addition", "Only the owner of the fund box can add collaborators."),
     FORBIDDEN_ACTION(403, "FORBIDDEN_ACTION", "Forbidden Action", "You do not have permission to perform this action."),
     CANNOT_REVOKE_OWN_SESSION(403, "CANNOT_REVOKE_OWN_SESSION", "Cannot Revoke Own Session", "You cannot revoke your own active session through this method. Use the /logout endpoint to log out of your current session. This method is intended for revoking other active sessions."),
+    IP_BLACKLISTED(403, "IP_BLACKLISTED", "IP blacklisted", "Access from your IP address has been permanently blocked due to suspicious or malicious activity."),
 
     // 404 - Not Found
     DEPOSIT_NOT_FOUND(404, "DEPOSIT_NOT_FOUND", "Deposit not found", "The requested deposit was not found"),
@@ -62,6 +63,7 @@ public enum ApiErrorCode {
 
     // 429 - Too Many Requests
     TOO_MANY_REQUESTS(429, "TOO_MANY_REQUESTS", "Too many requests", "You have exceeded the number of allowed requests. Please try again later."),
+    TOO_MANY_LOGIN_ATTEMPTS(429, "TOO_MANY_LOGIN_ATTEMPTS", "Too Many Login Attempts", "You have made too many failed login attempts. Please try again after the time indicated in the 'Retry-After' header."),
 
     // Server Error
     INTERNAL_ERROR(500, "INTERNAL_ERROR", "Unexpected error", "An unexpected error occurred"),
