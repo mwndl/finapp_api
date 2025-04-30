@@ -1,7 +1,7 @@
 package com.finapp.backend.exception;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,12 +14,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ApiErrorResponse> handleApiException(ApiException ex) {
         ApiErrorCode code = ex.getErrorCode();
+
         ApiErrorResponse response = new ApiErrorResponse(
                 code.getCode(),
                 code.getTitle(),
                 code.getDescription()
         );
-        return ResponseEntity.status(code.getHttpStatus()).body(response);
+
+        HttpHeaders headers = new HttpHeaders();
+        if (ex.getHeaders() != null && !ex.getHeaders().isEmpty()) {
+            ex.getHeaders().forEach(headers::add);
+        }
+
+        return new ResponseEntity<>(response, headers, code.getHttpStatus());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
