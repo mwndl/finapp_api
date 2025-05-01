@@ -2,6 +2,7 @@ package com.finapp.backend.api.v1;
 
 import com.finapp.backend.domain.model.PasswordResetToken;
 import com.finapp.backend.domain.service.*;
+import com.finapp.backend.domain.service.utils.ResetLinkBuilder;
 import com.finapp.backend.dto.auth.*;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
@@ -30,6 +31,7 @@ public class AuthController {
     private final PasswordResetService passwordResetService;
     private final EmailService emailService;
     private final UserService userService;
+    private final ResetLinkBuilder resetLinkBuilder;
 
     @PostMapping("/register")
     @Operation(
@@ -159,10 +161,9 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public void forgotPassword(@RequestBody ForgotPasswordRequest request) {
         PasswordResetToken token = passwordResetService.createToken(request.getEmail());
+        String resetLink = resetLinkBuilder.buildResetPasswordLink(token.getToken());
 
-        String resetLink = "https://your-frontend-app.com/reset-password?token=" + token.getToken();
         String message = "Click the link to reset your password: " + resetLink;
-
         emailService.sendEmail(request.getEmail(), "Password Reset", message);
     }
 
