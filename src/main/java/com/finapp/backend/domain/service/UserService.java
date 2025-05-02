@@ -1,6 +1,7 @@
 package com.finapp.backend.domain.service;
 
 import com.finapp.backend.domain.event.PasswordChangedEvent;
+import com.finapp.backend.domain.model.enums.UserStatus;
 import com.finapp.backend.domain.service.utils.UserUtilService;
 import com.finapp.backend.dto.user.UserResponse;
 import com.finapp.backend.exception.ApiErrorCode;
@@ -22,12 +23,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
     private final UserUtilService userUtilService;
+    private final SessionService sessionService;
 
     public UserResponse getUserInfo(String email) {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
-        return new UserResponse(user.getName(), user.getEmail());
+        return new UserResponse(user.getId(), user.getName(), user.getEmail());
     }
 
     public void updateUserData(String email, String newName) {
@@ -38,19 +40,30 @@ public class UserService {
             updateUserName(user, newName);
     }
 
+    public void updatePasswordByEmail(String email, String newPassword) {
+        User user = userUtilService.getUserByEmail(email);
+        userUtilService.checkUserStatus(user);
+        updateUserPassword(user, newPassword);
+    }
+
     public void updateUserPassword(String email, String currentPassword, String newPassword) {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
-        updateUserPassword(user, currentPassword, newPassword);
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash()))
+            throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
+
+        updateUserPassword(user, newPassword);
     }
 
     public void requestAccountDeletion(String email) {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
-        user.setActive(false);
+        user.setStatus(UserStatus.DEACTIVATION_REQUESTED);
         user.setDeletionRequestedAt(LocalDateTime.now());
         userRepository.save(user);
+
+        sessionService.revokeAllUserSessions(user);
     }
 
     // aux methods
@@ -65,10 +78,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private void updateUserPassword(User user, String currentPassword, String newPassword) {
-        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash()))
-            throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
-
+    private void updateUserPassword(User user, String newPassword) {
         if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$"))
             throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
 

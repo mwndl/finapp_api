@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,7 +60,7 @@ public class FundboxService {
     }
 
 
-    public FundBoxDetailsResponse getFundBoxDetails(Long fundBoxId, String email, Pageable pageable) {
+    public FundBoxDetailsResponse getFundBoxDetails(UUID fundBoxId, String email, Pageable pageable) {
         User user = userUtilService.getActiveUserByEmail(email);
 
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
@@ -94,7 +95,7 @@ public class FundboxService {
         );
     }
 
-    public FundBoxResponse updateFundBox(Long fundBoxId, String email, UpdateFundBoxRequest request) {
+    public FundBoxResponse updateFundBox(UUID fundBoxId, String email, UpdateFundBoxRequest request) {
         User user = userUtilService.getActiveUserByEmail(email);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
 
@@ -109,7 +110,7 @@ public class FundboxService {
         return fundBoxManager.buildFundBoxResponse(savedFundBox, fundBox.getOwner());
     }
 
-    public void deleteFundBox(Long fundBoxId, String email) {
+    public void deleteFundBox(UUID fundBoxId, String email) {
         User user = userUtilService.getActiveUserByEmail(email);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
 
@@ -121,7 +122,7 @@ public class FundboxService {
         fundBoxRepository.delete(fundBox);
     }
 
-    public void removeCollaborator(Long fundBoxId, String email, Long collaboratorId) {
+    public void removeCollaborator(UUID fundBoxId, String email, UUID collaboratorId) {
         User owner = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(owner);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, owner);
@@ -136,7 +137,7 @@ public class FundboxService {
         fundBoxRepository.save(fundBox);
     }
 
-    public void leaveFundBox(Long fundBoxId, String email) {
+    public void leaveFundBox(UUID fundBoxId, String email) {
         User collaborator = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(collaborator);
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, collaborator);

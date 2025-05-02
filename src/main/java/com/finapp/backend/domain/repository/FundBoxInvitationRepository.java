@@ -11,19 +11,20 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface FundBoxInvitationRepository extends JpaRepository<FundBoxInvitation, Long> {
+public interface FundBoxInvitationRepository extends JpaRepository<FundBoxInvitation, UUID> {
 
     boolean existsByFundBoxAndInviteeAndStatus(FundBox fundBox, User invitee, InvitationStatus status);
 
-    Optional<FundBoxInvitation> findById(Long invitationId);
+    Optional<FundBoxInvitation> findById(UUID invitationId);
 
     Page<FundBoxInvitation> findByInviter(User inviter, Pageable pageable);
 
-    Page<FundBoxInvitation> findByInvitee_Id(Long inviteeId, Pageable pageable);
+    Page<FundBoxInvitation> findByInvitee_Id(UUID inviteeId, Pageable pageable);
 
-    List<FundBoxInvitation> findByFundBox_IdAndStatus(Long fundBoxId, InvitationStatus status);
+    List<FundBoxInvitation> findByFundBox_IdAndStatus(UUID fundBoxId, InvitationStatus status);
 
 }
 

@@ -2,8 +2,11 @@ package com.finapp.backend.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcType;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -11,8 +14,11 @@ import java.util.Date;
 public class UserToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @JdbcType(org.hibernate.type.descriptor.jdbc.CharJdbcType.class)
+    @Column(updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

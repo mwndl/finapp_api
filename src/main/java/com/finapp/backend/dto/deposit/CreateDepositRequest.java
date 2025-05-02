@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 public class CreateDepositRequest {
@@ -22,5 +23,5 @@ public class CreateDepositRequest {
     @NotNull(message = "Transaction type is required")
     private TransactionType transactionType;
 
-    private Long fundBoxId;
+    private UUID fundBoxId;
 }

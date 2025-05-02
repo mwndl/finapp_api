@@ -1,10 +1,11 @@
 package com.finapp.backend.api.v1;
 
-import com.finapp.backend.domain.service.SessionService;
+import com.finapp.backend.domain.model.PasswordResetToken;
+import com.finapp.backend.domain.service.*;
+import com.finapp.backend.domain.service.utils.ResetLinkBuilder;
 import com.finapp.backend.dto.auth.*;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
-import com.finapp.backend.domain.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -26,6 +28,10 @@ public class AuthController {
 
     private final AuthService authService;
     private final SessionService sessionService;
+    private final PasswordResetService passwordResetService;
+    private final EmailService emailService;
+    private final UserService userService;
+    private final ResetLinkBuilder resetLinkBuilder;
 
     @PostMapping("/register")
     @Operation(
@@ -100,7 +106,7 @@ public class AuthController {
             }
     )
     public ResponseEntity<Void> logoutById(
-            @PathVariable Long sessionId,
+            @PathVariable UUID sessionId,
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest httpRequest
     ) {
@@ -150,5 +156,21 @@ public class AuthController {
 
         List<SessionInfo> activeSessions = sessionService.getActiveSessions(userDetails.getUsername(), currentAccessToken);
         return ResponseEntity.ok(activeSessions);
+    }
+
+    @PostMapping("/forgot-password")
+    public void forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        PasswordResetToken token = passwordResetService.createToken(request.getEmail());
+        String resetLink = resetLinkBuilder.buildResetPasswordLink(token.getToken());
+
+        String message = "Click the link to reset your password: " + resetLink;
+        emailService.sendEmail(request.getEmail(), "Password Reset", message);
+    }
+
+    @PostMapping("/reset-password")
+    public void resetPassword(@RequestBody ResetPasswordRequest request) {
+        PasswordResetToken token = passwordResetService.validateToken(request.getToken());
+        userService.updatePasswordByEmail(token.getEmail(), request.getNewPassword());
+        passwordResetService.markTokenAsUsed(token);
     }
 }

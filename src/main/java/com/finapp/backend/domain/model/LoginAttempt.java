@@ -1,6 +1,5 @@
 package com.finapp.backend.domain.model;
 
-import com.finapp.backend.domain.model.enums.InvitationStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
@@ -10,8 +9,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(
+        name = "login_attempt",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"email", "ip", "userAgent"})
+)
 @Data
-public class FundBoxInvitation {
+public class LoginAttempt {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -19,22 +22,21 @@ public class FundBoxInvitation {
     @Column(updatable = false, nullable = false, columnDefinition = "CHAR(36)")
     private UUID id;
 
-    @ManyToOne
-    @JoinColumn(name = "fund_box_id")
-    private FundBox fundBox;
+    @Column(nullable = false)
+    private String email;
 
-    @ManyToOne
-    @JoinColumn(name = "inviter_id")
-    private User inviter;
+    @Column(nullable = false)
+    private String ip;
 
-    @ManyToOne
-    @JoinColumn(name = "invitee_id")
-    private User invitee;
+    @Column(nullable = false)
+    private String userAgent;
 
-    @Enumerated(EnumType.STRING)
-    private InvitationStatus status;
+    @Column(nullable = false)
+    private int attemptCount;
 
-    private LocalDateTime invitationDate;
-    private LocalDateTime acceptedDate;
+    @Column(nullable = false)
+    private LocalDateTime lastAttemptAt;
 
+    private LocalDateTime blockedUntil;
 }
+

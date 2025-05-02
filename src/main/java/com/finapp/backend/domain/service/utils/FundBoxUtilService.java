@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +38,7 @@ public class FundBoxUtilService {
     private final FundBoxInvitationRepository fundBoxInvitationRepository;
     private final UserUtilService userUtilService;
 
-    public boolean fundBoxExists(Long userId, String name) {
+    public boolean fundBoxExists(UUID userId, String name) {
         return fundBoxRepository.existsByOwnerIdAndName(userId, name.trim());
     }
 
@@ -60,12 +61,12 @@ public class FundBoxUtilService {
         );
     }
 
-    public FundBox getFundBoxById(Long fundBoxId, User user) {
+    public FundBox getFundBoxById(UUID fundBoxId, User user) {
         return fundBoxRepository.findByIdAndUserIsOwnerOrCollaborator(fundBoxId, user.getId())
                 .orElseThrow(() -> new ApiException(ApiErrorCode.FUND_BOX_NOT_FOUND));
     }
 
-    public BigDecimal calculateBalance(Long fundBoxId) {
+    public BigDecimal calculateBalance(UUID fundBoxId) {
         BigDecimal entryTotal = Optional.ofNullable(
                 depositRepository.sumByFundBoxIdAndTransactionType(fundBoxId, TransactionType.ENTRY)
         ).orElse(BigDecimal.ZERO);
@@ -77,7 +78,7 @@ public class FundBoxUtilService {
         return entryTotal.subtract(exitTotal);
     }
 
-    public Page<DepositResponse> getDepositResponses(Long fundBoxId, Pageable pageable) {
+    public Page<DepositResponse> getDepositResponses(UUID fundBoxId, Pageable pageable) {
         Page<Deposit> depositPage = depositRepository.findByFundBoxId(fundBoxId, pageable);
 
         return depositPage.map(deposit -> {
@@ -108,7 +109,7 @@ public class FundBoxUtilService {
         });
     }
 
-    public FundBoxInvitation validateInvitationForUser(Long invitationId, String email) {
+    public FundBoxInvitation validateInvitationForUser(UUID invitationId, String email) {
         FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
 

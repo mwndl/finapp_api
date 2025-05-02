@@ -1,6 +1,7 @@
 package com.finapp.backend.security;
 
 import com.finapp.backend.domain.model.User;
+import com.finapp.backend.domain.model.enums.UserStatus;
 import com.finapp.backend.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.*;
@@ -26,7 +27,9 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
                 .roles("USER") // can be adapted in the future
-                .accountLocked(!user.getActive())
+                .accountLocked(
+                        user.getStatus() == UserStatus.DEACTIVATION_REQUESTED || user.getStatus() == UserStatus.LOCKED
+                )
                 .build();
     }
 }

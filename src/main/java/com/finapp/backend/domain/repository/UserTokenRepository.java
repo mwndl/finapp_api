@@ -6,8 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
+public interface UserTokenRepository extends JpaRepository<UserToken, UUID> {
 
     List<UserToken> findAllByUserAndRevokedFalse(User user);
 
@@ -19,6 +20,6 @@ public interface UserTokenRepository extends JpaRepository<UserToken, Long> {
 
     Optional<UserToken> findByAccessTokenAndRevokedFalse(String accessToken);
 
-    Optional<UserToken> findByIdAndRevokedFalse(Long sessionId);
+    Optional<UserToken> findByIdAndRevokedFalse(UUID sessionId);
 
 }

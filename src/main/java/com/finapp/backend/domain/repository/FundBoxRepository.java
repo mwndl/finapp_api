@@ -8,12 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.UUID;
 
-public interface FundBoxRepository extends JpaRepository<FundBox, Long> {
-    boolean existsByOwnerIdAndName(Long ownerId, String name);
+public interface FundBoxRepository extends JpaRepository<FundBox, UUID> {
+    boolean existsByOwnerIdAndName(UUID ownerId, String name);
 
     @Query("SELECT f FROM FundBox f WHERE f.owner.id = :userId OR :userId IN (SELECT fc.user.id FROM FundBoxCollaborator fc WHERE fc.fundBox.id = f.id)")
-    Page<FundBox> findByOwnerIdOrCollaboratorsContaining(@Param("userId") Long userId, Pageable pageable);
+    Page<FundBox> findByOwnerIdOrCollaboratorsContaining(@Param("userId") UUID userId, Pageable pageable);
 
     @Query("""
     SELECT f FROM FundBox f
@@ -26,9 +27,9 @@ public interface FundBoxRepository extends JpaRepository<FundBox, Long> {
           )
       )
     """)
-    Optional<FundBox> findByIdAndUserIsOwnerOrCollaborator(@Param("fundBoxId") Long fundBoxId, @Param("userId") Long userId);
+    Optional<FundBox> findByIdAndUserIsOwnerOrCollaborator(@Param("fundBoxId") UUID fundBoxId, @Param("userId") UUID userId);
 
 
-    Page<FundBox> findByOwnerId(Long ownerId, Pageable pageable);
-    Optional<FundBox> findByIdAndOwnerId(Long id, Long ownerId);
+    Page<FundBox> findByOwnerId(UUID ownerId, Pageable pageable);
+    Optional<FundBox> findByIdAndOwnerId(UUID id, UUID ownerId);
 }
