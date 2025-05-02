@@ -1,9 +1,6 @@
 package com.finapp.backend.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcType;
@@ -12,6 +9,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(
+        name = "login_attempt",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"email", "ip", "userAgent"})
+)
 @Data
 public class LoginAttempt {
     @Id
@@ -20,9 +21,22 @@ public class LoginAttempt {
     @JdbcType(org.hibernate.type.descriptor.jdbc.CharJdbcType.class)
     @Column(updatable = false, nullable = false, columnDefinition = "CHAR(36)")
     private UUID id;
+
+    @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String ip;
+
+    @Column(nullable = false)
     private String userAgent;
-    private LocalDateTime attemptedAt;
+
+    @Column(nullable = false)
+    private int attemptCount;
+
+    @Column(nullable = false)
+    private LocalDateTime lastAttemptAt;
+
+    private LocalDateTime blockedUntil;
 }
 
