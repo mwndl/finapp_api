@@ -5,9 +5,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface LoginAttemptRepository extends JpaRepository<LoginAttempt, UUID> {
-    List<LoginAttempt> findAllByIpAndUserAgentAndAttemptedAtAfter(String ip, String userAgent, LocalDateTime attemptedAt);
     void deleteAllByIpAndEmail(String ip, String email);
+
+    Optional<LoginAttempt> findByIpAndUserAgentAndEmail(String ip, String userAgent, String email);
 }
