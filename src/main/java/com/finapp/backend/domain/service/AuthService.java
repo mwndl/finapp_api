@@ -21,9 +21,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -93,56 +93,32 @@ public class AuthService {
     private void authenticateUser(LoginRequest request, HttpServletRequest httpRequest) {
         String ip = httpRequest.getRemoteAddr();
         String userAgent = httpRequest.getHeader("User-Agent");
-        LocalDateTime since = LocalDateTime.now().minusMinutes(5);
+        String email = request.getEmail();
 
-        List<LoginAttempt> recentAttempts = loginAttemptRepository.findAllByIpAndUserAgentAndAttemptedAtAfter(ip, userAgent, since);
+        LoginAttempt loginAttempt = getOrCreateLoginAttempt(ip, userAgent, email);
 
-        if (!recentAttempts.isEmpty())
-            handleTooManyAttempts(recentAttempts);
+        if (loginAttempt.getBlockedUntil() != null && loginAttempt.getBlockedUntil().isAfter(LocalDateTime.now())) {
+            long waitSeconds = Duration.between(LocalDateTime.now(), loginAttempt.getBlockedUntil()).getSeconds();
+            throw new ApiException(ApiErrorCode.TOO_MANY_LOGIN_ATTEMPTS, Map.of("Retry-After", String.valueOf(waitSeconds)));
+        }
 
         try {
             authenticateWithCredentials(request);
-            clearLoginAttempts(ip, request.getEmail());
+            clearLoginAttempts(ip, email);
         } catch (BadCredentialsException e) {
-            handleFailedLoginAttempt(recentAttempts, ip, userAgent, request.getEmail());
+            handleFailedLoginAttempt(loginAttempt);
         }
     }
 
-    private void handleTooManyAttempts(List<LoginAttempt> recentAttempts) {
-        LocalDateTime lastAttemptTime = recentAttempts.getLast().getAttemptedAt();
-        int failedAttempts = recentAttempts.size();
+    private void handleFailedLoginAttempt(LoginAttempt loginAttempt) {
+        loginAttempt.setAttemptCount(loginAttempt.getAttemptCount() + 1);
+        loginAttempt.setLastAttemptAt(LocalDateTime.now());
 
-        int waitSeconds = calculateWaitTime(failedAttempts);
+        int waitSeconds = calculateWaitTime(loginAttempt.getAttemptCount());
+        if (waitSeconds > 0)
+            loginAttempt.setBlockedUntil(LocalDateTime.now().plusSeconds(waitSeconds));
 
-        if (failedAttempts > 10) {
-            throw new ApiException(ApiErrorCode.IP_BLACKLISTED);
-        }
-
-        long secondsSinceLastAttempt = java.time.Duration.between(lastAttemptTime, LocalDateTime.now()).getSeconds();
-        long secondsToWait = waitSeconds - secondsSinceLastAttempt;
-
-        if (secondsToWait > 0) {
-            throw new ApiException(
-                    ApiErrorCode.TOO_MANY_LOGIN_ATTEMPTS,
-                    Map.of("Retry-After", String.valueOf(secondsToWait))
-            );
-        }
-    }
-
-    private void authenticateWithCredentials(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-    }
-
-    private void clearLoginAttempts(String ip, String email) {
-        loginAttemptRepository.deleteAllByIpAndEmail(ip, email);
-    }
-
-    private void handleFailedLoginAttempt(List<LoginAttempt> recentAttempts, String ip, String userAgent, String email) {
-        addLoginAttempt(ip, userAgent, email);
-
-        int waitSeconds = calculateWaitTime(recentAttempts.size() + 1);
+        loginAttemptRepository.save(loginAttempt);
 
         throw new ApiException(
                 ApiErrorCode.INVALID_CREDENTIALS,
@@ -150,24 +126,44 @@ public class AuthService {
         );
     }
 
-    private void addLoginAttempt(String ip, String userAgent, String email) {
+    private LoginAttempt getOrCreateLoginAttempt(String ip, String userAgent, String email) {
+        return loginAttemptRepository
+                .findByIpAndUserAgentAndEmail(ip, userAgent, email)
+                .orElseGet(() -> createNewLoginAttempt(ip, userAgent, email));
+    }
+
+    private LoginAttempt createNewLoginAttempt(String ip, String userAgent, String email) {
         LoginAttempt attempt = new LoginAttempt();
         attempt.setIp(ip);
         attempt.setUserAgent(userAgent);
         attempt.setEmail(email);
-        attempt.setAttemptedAt(LocalDateTime.now());
-        loginAttemptRepository.save(attempt);
+        attempt.setAttemptCount(0);
+        attempt.setLastAttemptAt(LocalDateTime.now());
+        attempt.setBlockedUntil(null);
+        return loginAttemptRepository.save(attempt);
     }
 
-    private int calculateWaitTime(int failedAttempts) {
-        return switch (failedAttempts) {
-            case 1 -> 5;
-            case 2 -> 15;
-            case 3 -> 60;
-            case 4 -> 300;
-            case 5 -> 3600;
+    private void clearLoginAttempts(String ip, String email) {
+        loginAttemptRepository.deleteAllByIpAndEmail(ip, email);
+    }
+
+    private int calculateWaitTime(int attempts) {
+        return switch (attempts) {
+            case 1, 2 -> 0;
+            case 3 -> 5; // 5s
+            case 4 -> 15; // 15s
+            case 5 -> 60; // 1min
+            case 6 -> 300; // 5mins
+            case 7 -> 3600; // 1h
+            case 8 -> 86400; // 1 day
             default -> 86400;
         };
+    }
+
+    private void authenticateWithCredentials(LoginRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
     }
 
     private String generateAccessTokenForUser(User user) {
