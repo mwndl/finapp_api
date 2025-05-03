@@ -2,6 +2,7 @@ package com.finapp.backend.domain.repository;
 
 import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.model.enums.UserStatus;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
@@ -12,4 +13,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
     int deleteByStatusAndDeletionRequestedAtBefore(UserStatus status, LocalDateTime dateTime);
 
+    boolean existsByUsername(@NotBlank(message = "Username cannot be blank") String attr0);
 }
