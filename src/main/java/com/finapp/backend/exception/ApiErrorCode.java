@@ -10,6 +10,9 @@ public enum ApiErrorCode {
     NAME_INVALID(400, "NAME_INVALID", "Name format is invalid", "Name must contain at least two words with only letters"),
     SAME_NAME(400, "SAME_NAME", "Name is the same", "The new name must be different from the current one"),
     SAME_PASSWORD(400, "SAME_PASSWORD", "Password is the same", "The new password must be different from the current one"),
+    SAME_USERNAME(400, "SAME_USERNAME", "Username is the same", "The new username must be different from the current one"),
+    INVALID_USERNAME(400, "INVALID_USERNAME", "Invalid username", "Username must be 4-15 characters, all lowercase, using only letters, numbers, '.', '_' or '-', and must not start/end with special characters or contain double special characters"),
+    USERNAME_RESERVED(400, "USERNAME_RESERVED", "Username is reserved", "This username is not allowed and cannot be used"),
 
     INVALID_DESCRIPTION(400, "INVALID_DESCRIPTION", "Invalid description", "The description must be between 1 and 255 characters."),
     INVALID_TRANSACTION_TYPE(400, "INVALID_TRANSACTION_TYPE", "Invalid transaction type", "The specified transaction type is not recognized. Use ENTRY or EXIT." ),
