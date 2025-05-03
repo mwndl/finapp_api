@@ -47,6 +47,9 @@ public class AuthService {
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setStatus(UserStatus.ACTIVE); // replace by 'UserStatus.PENDING_VERIFICATION' when the email logic is completed
+        validationService.validateName(request.getName());
+        validationService.validateUsername(request.getUsername());
+        validationService.validatePassword(request.getPassword());
         userRepository.save(user);
 
         return generateAndPersistTokens(user, httpRequest);
