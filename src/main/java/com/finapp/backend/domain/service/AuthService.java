@@ -43,11 +43,6 @@ public class AuthService {
         if (userRepository.findByEmail(request.getEmail()).isPresent())
             throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setStatus(UserStatus.ACTIVE); // replace by 'UserStatus.PENDING_VERIFICATION' when the email logic is completed
         validationService.validateName(request.getName());
         validationService.validateUsername(request.getUsername());
         validationService.validatePassword(request.getPassword());
