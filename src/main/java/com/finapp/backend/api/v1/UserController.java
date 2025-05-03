@@ -51,7 +51,7 @@ public class UserController {
             @AuthenticationPrincipal UserDetails userDetails,
             @Valid @RequestBody UpdateUserDataRequest request
     ) {
-        userService.updateUserData(userDetails.getUsername(), request.getNewName());
+        userService.updateUserData(userDetails.getUsername(), request.getNewName(), request.getNewUsername());
         return ResponseEntity.ok("User data updated successfully");
     }
 
