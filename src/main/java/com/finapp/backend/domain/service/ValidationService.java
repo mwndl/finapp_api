@@ -38,19 +38,18 @@ public class ValidationService {
 
     private static final Set<String> RESERVED_USERNAMES = Set.of("admin", "root", "support", "api", "user", "null", "me", "system");
     public void validateUsername(String username) {
-        String normalized = username.trim().toLowerCase();
 
         String usernameRegex = "^(?!.*[._-]{2})(?![._-])[a-z0-9._-]{4,15}(?<![._-])$";
         Pattern pattern = Pattern.compile(usernameRegex);
-        Matcher matcher = pattern.matcher(normalized);
+        Matcher matcher = pattern.matcher(username);
 
         if (!matcher.matches())
             throw new ApiException(ApiErrorCode.USERNAME_INVALID);
 
-        if (RESERVED_USERNAMES.contains(normalized))
+        if (RESERVED_USERNAMES.contains(username))
             throw new ApiException(ApiErrorCode.USERNAME_RESERVED);
 
-        if (userRepository.existsByUsername(normalized))
+        if (userRepository.existsByUsername(username))
             throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
     }
 }
