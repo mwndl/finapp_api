@@ -71,6 +71,13 @@ public class AuthService {
         return generateAndPersistTokens(user, httpRequest);
     }
 
+    public void validateUsernameAvailability(String username) {
+        String normalized = username.trim().toLowerCase();
+        if (userRepository.existsByUsername(normalized)) {
+            throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
+        }
+    }
+
     public AuthResponse refreshToken(String refreshToken) {
         String username = jwtUtil.extractUsername(refreshToken);
         if (username == null)
