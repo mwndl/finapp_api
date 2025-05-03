@@ -51,6 +51,8 @@ public class AuthService {
         validationService.validateName(request.getName());
         validationService.validateUsername(request.getUsername());
         validationService.validatePassword(request.getPassword());
+
+        User user = createUser(request);
         userRepository.save(user);
 
         return generateAndPersistTokens(user, httpRequest);
@@ -202,6 +204,16 @@ public class AuthService {
 
     public boolean isRefreshTokenRevoked(String refreshToken) {
         return userTokenRepository.findByRefreshTokenAndRevokedTrue(refreshToken).isPresent();
+    }
+
+    private User createUser(RegisterRequest request) {
+        User user = new User();
+        user.setName(request.getName());
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setStatus(UserStatus.ACTIVE); // replace by 'UserStatus.PENDING_VERIFICATION' when the email logic is completed
+        return user;
     }
 
 }
