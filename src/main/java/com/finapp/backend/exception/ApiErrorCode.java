@@ -11,7 +11,7 @@ public enum ApiErrorCode {
     SAME_NAME(400, "SAME_NAME", "Name is the same", "The new name must be different from the current one"),
     SAME_PASSWORD(400, "SAME_PASSWORD", "Password is the same", "The new password must be different from the current one"),
     SAME_USERNAME(400, "SAME_USERNAME", "Username is the same", "The new username must be different from the current one"),
-    INVALID_USERNAME(400, "INVALID_USERNAME", "Invalid username", "Username must be 4-15 characters, all lowercase, using only letters, numbers, '.', '_' or '-', and must not start/end with special characters or contain double special characters"),
+    USERNAME_INVALID(400, "INVALID_USERNAME", "Invalid username", "Username must be 4-15 characters, all lowercase, using only letters, numbers, '.', '_' or '-', and must not start/end with special characters or contain double special characters"),
     USERNAME_RESERVED(400, "USERNAME_RESERVED", "Username is reserved", "This username is not allowed and cannot be used"),
 
     INVALID_DESCRIPTION(400, "INVALID_DESCRIPTION", "Invalid description", "The description must be between 1 and 255 characters."),
@@ -63,6 +63,7 @@ public enum ApiErrorCode {
     INVITATION_ALREADY_ACCEPTED(409, "INVITATION_ALREADY_ACCEPTED", "Invitation Already Accepted", "The invitation has already been accepted. You cannot accept it again."),
     INVITATION_CANNOT_BE_CANCELED(409, "INVITATION_CANNOT_BE_CANCELED", "Invitation Cannot Be Canceled", "Only pending invitations can be canceled."),
     ALREADY_USED_TOKEN(409, "ALREADY_USED_TOKEN", "Already Used Token", "The token provided has already been used and is no longer valid."),
+    USERNAME_ALREADY_TAKEN(409, "USERNAME_ALREADY_TAKEN", "Username Already Taken", "The username you have chosen is already in use. Please select a different username."),
 
     // 429 - Too Many Requests
     TOO_MANY_REQUESTS(429, "TOO_MANY_REQUESTS", "Too many requests", "You have exceeded the number of allowed requests. Please try again later."),
