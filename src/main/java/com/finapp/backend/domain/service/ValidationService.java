@@ -1,14 +1,20 @@
 package com.finapp.backend.domain.service;
 
+import com.finapp.backend.domain.repository.UserRepository;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
-import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 @Service
+@RequiredArgsConstructor
 public class ValidationService {
+
+    private final UserRepository userRepository;
 
     public void validateName(String name) {
         String nameRegex = "^(\\p{L}+\\s+\\p{L}+.*)$";
@@ -30,13 +36,21 @@ public class ValidationService {
         }
     }
 
+    private static final Set<String> RESERVED_USERNAMES = Set.of("admin", "root", "support", "api", "user", "null", "me", "system");
     public void validateUsername(String username) {
-        String usernameRegex = "^[a-zA-Z0-9_]{4,}$";
-        Pattern pattern = Pattern.compile(usernameRegex);
-        Matcher matcher = pattern.matcher(username);
+        String normalized = username.trim().toLowerCase();
 
-        if (!matcher.matches()) {
+        String usernameRegex = "^(?!.*[._-]{2})(?![._-])[a-z0-9._-]{4,15}(?<![._-])$";
+        Pattern pattern = Pattern.compile(usernameRegex);
+        Matcher matcher = pattern.matcher(normalized);
+
+        if (!matcher.matches())
             throw new ApiException(ApiErrorCode.USERNAME_INVALID);
-        }
+
+        if (RESERVED_USERNAMES.contains(normalized))
+            throw new ApiException(ApiErrorCode.USERNAME_RESERVED);
+
+        if (userRepository.existsByUsername(normalized))
+            throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
     }
 }

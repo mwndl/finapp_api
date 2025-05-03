@@ -26,6 +26,7 @@ public class UserService {
     private final ApplicationEventPublisher eventPublisher;
     private final UserUtilService userUtilService;
     private final SessionService sessionService;
+    private final ValidationService validationService;
 
     public UserResponse getUserInfo(String email) {
         User user = userUtilService.getUserByEmail(email);
@@ -82,20 +83,13 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private static final Pattern USERNAME_PATTERN = Pattern.compile("^(?!.*[._-]{2})(?![._-])[a-z0-9._-]{4,15}(?<![._-])$");
-    private static final Set<String> RESERVED_USERNAMES = Set.of("admin", "root", "support", "api", "user", "null", "me", "system");
 
     private void updateUsername(User user, String newUsername) {
         String normalized = newUsername.trim().toLowerCase();
-
         if (normalized.equals(user.getUsername()))
             throw new ApiException(ApiErrorCode.SAME_USERNAME);
 
-        if (!USERNAME_PATTERN.matcher(normalized).matches())
-            throw new ApiException(ApiErrorCode.INVALID_USERNAME);
-
-        if (RESERVED_USERNAMES.contains(normalized))
-            throw new ApiException(ApiErrorCode.USERNAME_RESERVED);
+        validationService.validateUsername(normalized);
 
         user.setUsername(normalized);
         userRepository.save(user);
