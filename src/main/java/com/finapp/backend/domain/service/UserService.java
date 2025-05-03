@@ -73,11 +73,11 @@ public class UserService {
 
     // aux methods
     private void updateName(User user, String newName) {
+
         if (newName.equals(user.getName()))
             throw new ApiException(ApiErrorCode.SAME_NAME);
 
-        if (!newName.matches("^[A-Za-zÀ-ÿ]+\\s+[A-Za-zÀ-ÿ]+(\\s+[A-Za-zÀ-ÿ]+)*$"))
-            throw new ApiException(ApiErrorCode.NAME_INVALID);
+        validationService.validateName(newName);
 
         user.setName(newName);
         userRepository.save(user);
@@ -96,11 +96,10 @@ public class UserService {
     }
 
     private void updateUserPassword(User user, String newPassword) {
-        if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$"))
-            throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
-
         if (passwordEncoder.matches(newPassword, user.getPasswordHash()))
             throw new ApiException(ApiErrorCode.SAME_PASSWORD);
+
+        validationService.validatePassword(newPassword);
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);

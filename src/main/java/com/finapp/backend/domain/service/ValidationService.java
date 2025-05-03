@@ -17,7 +17,7 @@ public class ValidationService {
     private final UserRepository userRepository;
 
     public void validateName(String name) {
-        String nameRegex = "^(\\p{L}+\\s+\\p{L}+.*)$";
+        String nameRegex = "^[A-Za-zÀ-ÿ]+\\s+[A-Za-zÀ-ÿ]+(\\s+[A-Za-zÀ-ÿ]+)*$";
         Pattern pattern = Pattern.compile(nameRegex);
         Matcher matcher = pattern.matcher(name);
 
