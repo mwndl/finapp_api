@@ -33,7 +33,6 @@ import java.util.UUID;
 public class DepositService {
 
     private final DepositRepository depositRepository;
-    private final UserRepository userRepository;
     private final FundBoxRepository fundBoxRepository;
     private final UserUtilService userUtilService;
 
