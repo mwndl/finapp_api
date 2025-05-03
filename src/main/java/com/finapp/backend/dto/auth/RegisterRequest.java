@@ -9,21 +9,15 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
     @NotBlank(message = "Name cannot be blank")
-    @Pattern(
-            regexp = "^(\\p{L}+\\s+\\p{L}+.*)$",
-            message = "Name must contain at least two words"
-    )
     private String name;
+
+    @NotBlank(message = "Username cannot be blank")
+    private String Username;
 
     @Email
     @NotBlank
     private String email;
 
     @NotBlank
-    @Size(min = 8, message = "Password must be at least 8 characters long")
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$",
-            message = "Password must contain uppercase, lowercase, number and special character"
-    )
     private String password;
 }
