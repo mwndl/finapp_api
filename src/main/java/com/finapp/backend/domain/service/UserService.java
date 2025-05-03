@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -29,15 +31,17 @@ public class UserService {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
-        return new UserResponse(user.getId(), user.getName(), user.getEmail());
+        return new UserResponse(user.getId(), user.getUsername(), user.getName(), user.getEmail());
     }
 
-    public void updateUserData(String email, String newName) {
+    public void updateUserData(String email, String newName, String newUsername) {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
         if (newName != null && !newName.trim().isEmpty())
-            updateUserName(user, newName);
+            updateName(user, newName);
+        if (newUsername != null && !newUsername.trim().isEmpty())
+            updateUsername(user, newUsername);
     }
 
     public void updatePasswordByEmail(String email, String newPassword) {
@@ -67,7 +71,7 @@ public class UserService {
     }
 
     // aux methods
-    private void updateUserName(User user, String newName) {
+    private void updateName(User user, String newName) {
         if (newName.equals(user.getName()))
             throw new ApiException(ApiErrorCode.SAME_NAME);
 
@@ -75,6 +79,25 @@ public class UserService {
             throw new ApiException(ApiErrorCode.NAME_INVALID);
 
         user.setName(newName);
+        userRepository.save(user);
+    }
+
+    private static final Pattern USERNAME_PATTERN = Pattern.compile("^(?!.*[._-]{2})(?![._-])[a-z0-9._-]{4,15}(?<![._-])$");
+    private static final Set<String> RESERVED_USERNAMES = Set.of("admin", "root", "support", "api", "user", "null", "me", "system");
+
+    private void updateUsername(User user, String newUsername) {
+        String normalized = newUsername.trim().toLowerCase();
+
+        if (normalized.equals(user.getUsername()))
+            throw new ApiException(ApiErrorCode.SAME_USERNAME);
+
+        if (!USERNAME_PATTERN.matcher(normalized).matches())
+            throw new ApiException(ApiErrorCode.INVALID_USERNAME);
+
+        if (RESERVED_USERNAMES.contains(normalized))
+            throw new ApiException(ApiErrorCode.USERNAME_RESERVED);
+
+        user.setUsername(normalized);
         userRepository.save(user);
     }
 
