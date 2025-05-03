@@ -37,6 +37,7 @@ public class AuthService {
     private final UserTokenRepository userTokenRepository;
     private final UserDetailsService userDetailsService;
     private final LoginAttemptService loginAttemptService;
+    private final ValidationService validationService;
 
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         if (userRepository.findByEmail(request.getEmail()).isPresent())
