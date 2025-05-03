@@ -8,5 +8,6 @@ public class UpdateUserDataRequest {
 
     @NotBlank(message = "Name is required")
     private String newName;
+    private String newUsername;
 
 }
