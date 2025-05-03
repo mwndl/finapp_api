@@ -42,6 +42,8 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         if (userRepository.findByEmail(request.getEmail()).isPresent())
             throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
+        if (userRepository.existsByUsername(request.getUsername()))
+            throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
 
         validationService.validateName(request.getName());
         validationService.validateUsername(request.getUsername());
