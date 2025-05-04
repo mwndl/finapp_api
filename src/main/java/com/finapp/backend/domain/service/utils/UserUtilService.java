@@ -41,4 +41,9 @@ public class UserUtilService {
             throw new ApiException(ApiErrorCode.ACCOUNT_LOCKED);
     }
 
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+    }
+
 }
