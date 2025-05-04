@@ -29,7 +29,7 @@ public class FundBoxInviteService {
     private final FundBoxRepository fundBoxRepository;
     private final UserUtilService userUtilService;
 
-    public void inviteCollaborator(UUID fundBoxId, String email, UUID collaboratorId) {
+    public void inviteCollaborator(UUID fundBoxId, String email, String collaboratorIdentifier) {
         User inviter = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(inviter);
 
@@ -38,20 +38,38 @@ public class FundBoxInviteService {
         if (!fundBox.getOwner().getId().equals(inviter.getId()))
             throw new ApiException(ApiErrorCode.FORBIDDEN_COLLABORATOR_ADDITION);
 
-        if (fundBox.getOwner().getId().equals(collaboratorId))
+        User invitee;
+
+        // find by ID
+        if (collaboratorIdentifier.matches("^[0-9a-fA-F-]{36}$"))
+            invitee = userUtilService.getUserById(UUID.fromString(collaboratorIdentifier));
+
+        // find by username
+        else if (collaboratorIdentifier.matches("^[a-zA-Z0-9_]{4,}$"))
+            invitee = userUtilService.getUserByUsername(collaboratorIdentifier);
+
+        // find by email
+        else if (collaboratorIdentifier.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"))
+            invitee = userUtilService.getUserByEmail(collaboratorIdentifier);
+
+        else
+            throw new ApiException(ApiErrorCode.INVALID_USER_IDENTIFIER);
+
+
+        userUtilService.checkUserStatus(invitee);
+
+        if (fundBox.getOwner().getId().equals(invitee.getId()))
             throw new ApiException(ApiErrorCode.COLLABORATOR_CANNOT_BE_OWNER);
 
-        User invitee = userUtilService.getUserById(collaboratorId);
         userUtilService.checkUserStatus(invitee);
 
         boolean isAlreadyCollaborator = fundBox.getCollaborators().stream()
-                .anyMatch(c -> c.getUser().getId().equals(collaboratorId));
-        if (isAlreadyCollaborator)
-            throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_EXISTS);
+                .anyMatch(c -> c.getUser().getId().equals(invitee.getId()));
+
+        if (isAlreadyCollaborator) throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_EXISTS);
 
         boolean alreadyInvited = fundBoxInvitationRepository.existsByFundBoxAndInviteeAndStatus(fundBox, invitee, InvitationStatus.PENDING);
-        if (alreadyInvited)
-            throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_INVITED);
+        if (alreadyInvited) throw new ApiException(ApiErrorCode.COLLABORATOR_ALREADY_INVITED);
 
         FundBoxInvitation invitation = new FundBoxInvitation();
         invitation.setFundBox(fundBox);
