@@ -252,6 +252,34 @@ public class DepositService {
         deposit.setFundBox(fundBox);
     }
 
+    public void unlinkDepositFromFundBox(UUID depositId, String email) {
+        User user = userUtilService.getActiveUserByEmail(email);
+        Deposit deposit = depositRepository.findById(depositId)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
+
+        // if the user is the deposit owner, he can unlink it
+        if (deposit.getUser().getId().equals(user.getId())) {
+            deposit.setFundBox(null);
+            depositRepository.save(deposit);
+            return;
+        }
+
+        FundBox fundBox = deposit.getFundBox();
+        if (fundBox != null) {
+            validateFundBoxAccess(fundBox, email);
+
+            // if the user is the fundbox owner, he can unlink any deposit
+            if (fundBox.getOwner().getEmail().equals(email)) {
+                deposit.setFundBox(null);
+                depositRepository.save(deposit);
+                return;
+            }
+        }
+
+        throw new ApiException(ApiErrorCode.UNAUTHORIZED_ACCESS);
+    }
+
+
     private DepositResponse mapToDepositResponse(Deposit deposit) {
         FundBoxInfo fundBoxInfo = null;
         OwnerResponse ownerResponse = null;
