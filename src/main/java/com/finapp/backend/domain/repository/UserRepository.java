@@ -11,7 +11,8 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
-    int deleteByStatusAndDeletionRequestedAtBefore(UserStatus status, LocalDateTime dateTime);
+    Optional<User> findByUsername(String username);
 
+    int deleteByStatusAndDeletionRequestedAtBefore(UserStatus status, LocalDateTime dateTime);
     boolean existsByUsername(@NotBlank(message = "Username cannot be blank") String attr0);
 }
