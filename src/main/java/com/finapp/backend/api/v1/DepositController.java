@@ -135,6 +135,27 @@ public class DepositController {
         return ResponseEntity.ok(updated);
     }
 
+    @PutMapping("/unlink/{depositId}")
+    @Operation(
+            summary = "Unlink deposit from fundbox",
+            description = "Removes the association between a deposit and its fund box.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Deposit unlinked successfully"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+                    @ApiResponse(responseCode = "403", description = "Forbidden - User not allowed to unlink this deposit or fund box"),
+                    @ApiResponse(responseCode = "404", description = "Not Found - Deposit or fund box not found"),
+                    @ApiResponse(responseCode = "409", description = "Conflict - Deposit cannot be unlinked due to user permissions")
+            }
+    )
+    public ResponseEntity<Void> unlinkDeposit(
+            @PathVariable UUID depositId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        depositService.unlinkDepositFromFundBox(depositId, userDetails.getUsername());
+        return ResponseEntity.ok().build();
+    }
+
+
     @DeleteMapping("/{depositId}")
     @Operation(
             summary = "Delete a deposit",
