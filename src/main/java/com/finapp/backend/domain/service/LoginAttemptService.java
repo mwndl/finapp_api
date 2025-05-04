@@ -17,7 +17,7 @@ public class LoginAttemptService {
 
     private final LoginAttemptRepository loginAttemptRepository;
 
-    @Transactional
+    @Transactional(noRollbackFor = ApiException.class)
     public void handleFailedLoginAttempt(LoginAttempt loginAttempt) {
         loginAttempt.setAttemptCount(loginAttempt.getAttemptCount() + 1);
         loginAttempt.setLastAttemptAt(LocalDateTime.now());
@@ -56,7 +56,7 @@ public class LoginAttemptService {
         loginAttemptRepository.deleteAllByIpAndEmail(ip, email);
     }
 
-    private int calculateWaitTime(int attempts) {
+    int calculateWaitTime(int attempts) {
         return switch (attempts) {
             case 1, 2 -> 0;
             case 3 -> 5; // 5s
