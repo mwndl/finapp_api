@@ -40,7 +40,7 @@ public class InvitationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "invitationDate"));
         Page<InviteResponse> invites = fundBoxInviteService.getUserInvites(userDetails.getUsername(), pageable);
         return ResponseEntity.ok(invites);
     }
@@ -59,7 +59,7 @@ public class InvitationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("invitationDate").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "invitationDate"));
         Page<InviteResponse> sentInvites = fundBoxInviteService.getSentInvites(userDetails.getUsername(), pageable);
         return ResponseEntity.ok(sentInvites);
     }
