@@ -4,18 +4,19 @@ import com.finapp.backend.domain.event.PasswordChangedEvent;
 import com.finapp.backend.domain.model.enums.UserStatus;
 import com.finapp.backend.domain.service.utils.UserUtilService;
 import com.finapp.backend.dto.user.UserResponse;
+import com.finapp.backend.dto.user.UserSearchResult;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,43 @@ public class UserService {
         userUtilService.checkUserStatus(user);
 
         return new UserResponse(user.getId(), user.getUsername(), user.getName(), user.getEmail());
+    }
+
+    public List<UserSearchResult> searchUsersByUsername(String identifier) {
+        Set<UUID> addedIds = new HashSet<>();
+        List<UserSearchResult> results = new ArrayList<>();
+
+        // search for exact username
+        try {
+            User exactMatch = userUtilService.getUserByUsername(identifier);
+            results.add(new UserSearchResult(exactMatch.getId(), exactMatch.getUsername(), exactMatch.getName(), 1.0));
+            addedIds.add(exactMatch.getId());
+        } catch (ApiException e) {
+            // ignore if not found (not an error)
+        }
+
+        // partial search by username
+        List<User> partialMatches = userRepository
+                .searchByUsername(identifier.toLowerCase(), PageRequest.of(0, 10));
+
+        for (User user : partialMatches) {
+            if (addedIds.contains(user.getId())) continue;
+
+            double score = computeUsernameConfidence(identifier.toLowerCase(), user.getUsername().toLowerCase());
+            results.add(new UserSearchResult(user.getId(), user.getUsername(), user.getName(), score));
+        }
+
+        return results.stream()
+                .sorted(Comparator.comparingDouble(UserSearchResult::getConfidence).reversed())
+                .limit(5)
+                .toList();
+    }
+
+    private double computeUsernameConfidence(String input, String username) {
+        if (username.equals(input)) return 1.0;
+        if (username.startsWith(input)) return 0.9;
+        if (username.contains(input)) return 0.75;
+        return 0.5;
     }
 
     public void updateUserData(String email, String newName, String newUsername) {
