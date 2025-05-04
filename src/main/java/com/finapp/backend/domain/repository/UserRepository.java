@@ -17,10 +17,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
 
-    @Query("""
-    SELECT u FROM User u
-    WHERE LOWER(u.username) LIKE %:query%
-    """)
+    @Query("SELECT u FROM User u WHERE LOWER(u.username) LIKE %:query%")
     List<User> searchByUsername(@Param("query") String query, Pageable pageable);
 
     int deleteByStatusAndDeletionRequestedAtBefore(UserStatus status, LocalDateTime dateTime);
