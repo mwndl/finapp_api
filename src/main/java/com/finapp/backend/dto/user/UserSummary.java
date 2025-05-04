@@ -9,5 +9,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserSummary {
     private UUID id;
+    private String username;
     private String name;
 }

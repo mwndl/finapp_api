@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -24,20 +26,23 @@ public class UserService {
     private final ApplicationEventPublisher eventPublisher;
     private final UserUtilService userUtilService;
     private final SessionService sessionService;
+    private final ValidationService validationService;
 
     public UserResponse getUserInfo(String email) {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
-        return new UserResponse(user.getId(), user.getName(), user.getEmail());
+        return new UserResponse(user.getId(), user.getUsername(), user.getName(), user.getEmail());
     }
 
-    public void updateUserData(String email, String newName) {
+    public void updateUserData(String email, String newName, String newUsername) {
         User user = userUtilService.getUserByEmail(email);
         userUtilService.checkUserStatus(user);
 
         if (newName != null && !newName.trim().isEmpty())
-            updateUserName(user, newName);
+            updateName(user, newName);
+        if (newUsername != null && !newUsername.trim().isEmpty())
+            updateUsername(user, newUsername);
     }
 
     public void updatePasswordByEmail(String email, String newPassword) {
@@ -67,23 +72,34 @@ public class UserService {
     }
 
     // aux methods
-    private void updateUserName(User user, String newName) {
+    private void updateName(User user, String newName) {
+
         if (newName.equals(user.getName()))
             throw new ApiException(ApiErrorCode.SAME_NAME);
 
-        if (!newName.matches("^[A-Za-zÀ-ÿ]+\\s+[A-Za-zÀ-ÿ]+(\\s+[A-Za-zÀ-ÿ]+)*$"))
-            throw new ApiException(ApiErrorCode.NAME_INVALID);
+        validationService.validateName(newName);
 
         user.setName(newName);
         userRepository.save(user);
     }
 
-    private void updateUserPassword(User user, String newPassword) {
-        if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#^()_+\\-=])[A-Za-z\\d@$!%*?&#^()_+\\-=]{8,}$"))
-            throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
 
+    private void updateUsername(User user, String newUsername) {
+        String normalized = newUsername.trim().toLowerCase();
+        if (normalized.equals(user.getUsername()))
+            throw new ApiException(ApiErrorCode.SAME_USERNAME);
+
+        validationService.validateUsername(normalized);
+
+        user.setUsername(normalized);
+        userRepository.save(user);
+    }
+
+    private void updateUserPassword(User user, String newPassword) {
         if (passwordEncoder.matches(newPassword, user.getPasswordHash()))
             throw new ApiException(ApiErrorCode.SAME_PASSWORD);
+
+        validationService.validatePassword(newPassword);
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);

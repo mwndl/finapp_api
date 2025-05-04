@@ -60,6 +60,20 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request, httpRequest));
     }
 
+    @PostMapping("/validate-username")
+    @Operation(
+            summary = "Validate Username Availability",
+            description = "Checks if the given username is available for registration. If the username is already taken, it returns an error.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Username is available for registration"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Username is already taken")
+            }
+    )
+    public ResponseEntity<Void> validateUsername(@RequestBody UsernameValidationRequest request) {
+        authService.validateUsernameAvailability(request.getUsername());
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/refresh")
     @Operation(
             summary = "Refresh access token",

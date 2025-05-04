@@ -130,10 +130,13 @@ public class FundBoxUtilService {
         ));
         response.setInviter(new UserSummary(
                 invite.getInviter().getId(),
+                invite.getInviter().getUsername(),
                 invite.getInviter().getName()
+
         ));
         response.setInvitee(new UserSummary(
                 invite.getInvitee().getId(),
+                invite.getInvitee().getUsername(),
                 invite.getInvitee().getName()
         ));
         response.setStatus(invite.getStatus().name());

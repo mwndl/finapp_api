@@ -2,6 +2,7 @@ package com.finapp.backend.domain.model;
 
 import com.finapp.backend.domain.model.enums.UserStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcType;
@@ -30,6 +31,10 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(nullable = false, unique = true)
+    @Size(min = 4, message = "Username must be at least 4 characters long")
+    private String username;
 
     @Column(nullable = false)
     private String passwordHash;
