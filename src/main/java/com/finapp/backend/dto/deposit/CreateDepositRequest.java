@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -15,8 +15,8 @@ public class CreateDepositRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     private BigDecimal amount;
 
-    @NotNull(message = "Date is required")
-    private LocalDate date;
+    @NotNull(message = "DateTime is required")
+    private LocalDateTime dateTime;
 
     private String description;
 

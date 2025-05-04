@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class DepositResponse {
     private UUID id;
     private BigDecimal amount;
-    private LocalDate date;
+    private LocalDateTime dateTime;
     private String description;
     private FundBoxInfo fundBox;
     private String TransactionType;

@@ -23,7 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -76,7 +76,7 @@ public class DepositService {
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
         validateDepositOwnership(deposit, user);
-        updateDepositField(deposit, request.getAmount(), request.getDate(), request.getTransactionType(), request.getDescription(), request.getFundBoxId(), email);
+        updateDepositField(deposit, request.getAmount(), request.getDateTime(), request.getTransactionType(), request.getDescription(), request.getFundBoxId(), email);
         depositRepository.save(deposit);
         return mapToDepositResponse(deposit);
     }
@@ -132,7 +132,7 @@ public class DepositService {
     private Deposit createDepositFromRequest(CreateDepositRequest request, User user, FundBox fundBox) {
         Deposit deposit = new Deposit();
         deposit.setAmount(request.getAmount());
-        deposit.setDate(request.getDate());
+        deposit.setDate(request.getDateTime());
         if (request.getDescription() != null) {
             deposit.setDescription(request.getDescription().trim());
         }
@@ -155,9 +155,9 @@ public class DepositService {
         return fundBox;
     }
 
-    private void updateDepositField(Deposit deposit, BigDecimal amount, LocalDate date, TransactionType transactionType, String description, UUID fundBoxId, String email) {
+    private void updateDepositField(Deposit deposit, BigDecimal amount, LocalDateTime dateTime, TransactionType transactionType, String description, UUID fundBoxId, String email) {
         if (amount != null) updateAmount(deposit, amount);
-        if (date != null) updateDate(deposit, date);
+        if (dateTime != null) updateDate(deposit, dateTime);
         if (transactionType != null) updateTransactionType(deposit, transactionType);
         if (description != null) updateDescription(deposit, description);
         if (fundBoxId != null) updateFundBox(deposit, fundBoxId, email);
@@ -173,7 +173,7 @@ public class DepositService {
 
     private void validateCreateRequest(CreateDepositRequest request) {
         validateAmount(request.getAmount());
-        validateDate(request.getDate());
+        validateDate(request.getDateTime());
         validateTransactionType(request.getTransactionType());
         validateDescription(request.getDescription());
     }
@@ -183,8 +183,8 @@ public class DepositService {
             throw new ApiException(ApiErrorCode.INVALID_AMOUNT);
     }
 
-    private void validateDate(LocalDate date) {
-        if (date == null || date.isAfter(LocalDate.now()))
+    private void validateDate(LocalDateTime date) {
+        if (date == null || date.isAfter(LocalDateTime.now()))
             throw new ApiException(ApiErrorCode.INVALID_DATE_FUTURE);
     }
 
@@ -208,10 +208,10 @@ public class DepositService {
         deposit.setAmount(amount);
     }
 
-    private void updateDate(Deposit deposit, LocalDate date) {
-        if (date == null) return;
-        validateDate(date);
-        deposit.setDate(date);
+    private void updateDate(Deposit deposit, LocalDateTime dateTime) {
+        if (dateTime == null) return;
+        validateDate(dateTime);
+        deposit.setDate(dateTime);
     }
 
     private void updateTransactionType(Deposit deposit, TransactionType transactionType) {
