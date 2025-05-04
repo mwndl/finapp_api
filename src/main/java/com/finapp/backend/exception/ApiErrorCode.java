@@ -25,6 +25,7 @@ public enum ApiErrorCode {
     COLLABORATOR_ALREADY_EXISTS(400, "COLLABORATOR_ALREADY_EXISTS", "Collaborator already added", "The user is already a collaborator of this FundBox."),
     COLLABORATOR_CANNOT_BE_OWNER(400, "COLLABORATOR_CANNOT_BE_OWNER", "Invalid collaborator", "The owner of a FundBox cannot be added as a collaborator."),
     CANNOT_LEAVE_AS_OWNER(400, "CANNOT_LEAVE_AS_OWNER", "Cannot Leave As Owner", "You cannot leave a FundBox that you own. This method is intended for FundBox collaborators."),
+    INVALID_USER_IDENTIFIER(400, "INVALID_USER_IDENTIFIER", "Invalid user identifier", "The specified user identifier is not valid"),
 
     // 401 - Unauthorized
     UNAUTHENTICATED(401, "UNAUTHENTICATED", "User not authenticated", "Authentication is required to access this resource. Please provide a valid token."),
