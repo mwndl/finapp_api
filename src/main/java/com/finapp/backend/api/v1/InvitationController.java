@@ -120,10 +120,7 @@ public class InvitationController {
             @PathVariable UUID userId,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
-        // The 'inviteCollaborator' method has been changed to support UUID, username and email.
-        // To avoid breaking V1 we've converted the UUID to String (the new format expected).
-        // A new invite method supporting all parameters has been created in V2!
-        fundBoxInviteService.inviteCollaborator(fundBoxId, userDetails.getUsername(), userId.toString());
+        fundBoxInviteService.inviteCollaborator(fundBoxId, userDetails.getUsername(), userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
