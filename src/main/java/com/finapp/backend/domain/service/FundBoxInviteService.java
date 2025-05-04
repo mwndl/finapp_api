@@ -38,24 +38,7 @@ public class FundBoxInviteService {
         if (!fundBox.getOwner().getId().equals(inviter.getId()))
             throw new ApiException(ApiErrorCode.FORBIDDEN_COLLABORATOR_ADDITION);
 
-        User invitee;
-
-        // find by ID
-        if (collaboratorIdentifier.matches("^[0-9a-fA-F-]{36}$"))
-            invitee = userUtilService.getUserById(UUID.fromString(collaboratorIdentifier));
-
-        // find by username
-        else if (collaboratorIdentifier.matches("^[a-zA-Z0-9_]{4,}$"))
-            invitee = userUtilService.getUserByUsername(collaboratorIdentifier);
-
-        // find by email
-        else if (collaboratorIdentifier.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"))
-            invitee = userUtilService.getUserByEmail(collaboratorIdentifier);
-
-        else
-            throw new ApiException(ApiErrorCode.INVALID_USER_IDENTIFIER);
-
-
+        User invitee = userUtilService.getUserByIdentifier(collaboratorIdentifier);
         userUtilService.checkUserStatus(invitee);
 
         if (fundBox.getOwner().getId().equals(invitee.getId()))
