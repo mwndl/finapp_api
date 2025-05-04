@@ -1,10 +1,10 @@
 package com.finapp.backend.api.v1;
 
-import com.finapp.backend.dto.user.UpdateUserDataRequest;
-import com.finapp.backend.dto.user.UpdateUserPasswordRequest;
-import com.finapp.backend.dto.user.UserResponse;
+import com.finapp.backend.dto.user.*;
 import com.finapp.backend.domain.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/users")
@@ -35,6 +37,22 @@ public class UserController {
         UserResponse response = userService.getUserInfo(userDetails.getUsername());
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/search")
+    @Operation(
+            summary = "Search users",
+            description = "Performs a smart search for users based on a given identifier (ID, username, or email). Returns the top matches with a confidence score between 0 and 1.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "OK - Top user matches returned successfully"),
+                    @ApiResponse(responseCode = "400", description = "Bad Request - Invalid identifier format"),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authentication token")
+            }
+    )
+    public ResponseEntity<List<UserSearchResult>> searchUsers(@Valid @RequestBody UserIdentifierRequest request) {
+        List<UserSearchResult> results = userService.searchUsersByUsername(request.getUserIdentifier());
+        return ResponseEntity.ok(results);
+    }
+
 
     @PutMapping
     @Operation(

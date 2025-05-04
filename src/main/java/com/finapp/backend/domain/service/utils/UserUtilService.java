@@ -41,4 +41,34 @@ public class UserUtilService {
             throw new ApiException(ApiErrorCode.ACCOUNT_LOCKED);
     }
 
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ApiException(ApiErrorCode.USER_NOT_FOUND));
+    }
+
+    public User getUserByIdentifier(String identifier) {
+        if (isUUID(identifier)) {
+            return getUserById(UUID.fromString(identifier));
+        } else if (isUsername(identifier)) {
+            return getUserByUsername(identifier);
+        } else if (isEmail(identifier)) {
+            return getUserByEmail(identifier);
+        } else {
+            throw new ApiException(ApiErrorCode.INVALID_USER_IDENTIFIER);
+        }
+    }
+
+    private boolean isUUID(String str) {
+        return str.matches("^[0-9a-fA-F-]{36}$");
+    }
+
+    private boolean isUsername(String str) {
+        return str.matches("^(?!.*[._-]{2})(?![._-])[a-z0-9._-]{4,15}(?<![._-])$");
+    }
+
+    private boolean isEmail(String str) {
+        return str.matches("^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$");
+    }
+
+
 }
