@@ -21,9 +21,7 @@ public class ValidationService {
         Pattern pattern = Pattern.compile(nameRegex);
         Matcher matcher = pattern.matcher(name);
 
-        if (!matcher.matches()) {
-            throw new ApiException(ApiErrorCode.NAME_INVALID);
-        }
+        if (!matcher.matches()) throw new ApiException(ApiErrorCode.NAME_INVALID);
     }
 
     public void validatePassword(String password) {
@@ -31,9 +29,7 @@ public class ValidationService {
         Pattern pattern = Pattern.compile(passwordRegex);
         Matcher matcher = pattern.matcher(password);
 
-        if (!matcher.matches()) {
-            throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
-        }
+        if (!matcher.matches()) throw new ApiException(ApiErrorCode.PASSWORD_TOO_WEAK);
     }
 
     private static final Set<String> RESERVED_USERNAMES = Set.of("admin", "root", "support", "api", "user", "null", "me", "system");
@@ -43,13 +39,8 @@ public class ValidationService {
         Pattern pattern = Pattern.compile(usernameRegex);
         Matcher matcher = pattern.matcher(username);
 
-        if (!matcher.matches())
-            throw new ApiException(ApiErrorCode.USERNAME_INVALID);
-
-        if (RESERVED_USERNAMES.contains(username))
-            throw new ApiException(ApiErrorCode.USERNAME_RESERVED);
-
-        if (userRepository.existsByUsername(username))
-            throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
+        if (!matcher.matches()) throw new ApiException(ApiErrorCode.USERNAME_INVALID);
+        if (RESERVED_USERNAMES.contains(username)) throw new ApiException(ApiErrorCode.USERNAME_RESERVED);
+        if (userRepository.existsByUsername(username)) throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
     }
 }
