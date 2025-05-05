@@ -1,6 +1,5 @@
 package com.finapp.backend.domain.service.utils;
 
-import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
 import com.finapp.backend.dto.fundbox.v1.*;
 import com.finapp.backend.dto.user.InviteResponse;
@@ -75,7 +74,7 @@ public class FundBoxUtilService {
         return entryTotal.subtract(exitTotal);
     }
 
-    public Page<DepositResponse> getDepositResponses(UUID fundBoxId, Pageable pageable) {
+    public Page<FundboxDepositResponse> getDepositResponses(UUID fundBoxId, Pageable pageable) {
         Page<Deposit> depositPage = depositRepository.findByFundBoxId(fundBoxId, pageable);
 
         return depositPage.map(deposit -> {
@@ -92,14 +91,13 @@ public class FundBoxUtilService {
                 );
             }
 
-            return new DepositResponse(
+            return new FundboxDepositResponse(
                     deposit.getId(),
                     deposit.getTransactionType() == TransactionType.EXIT
                             ? deposit.getAmount().negate()
                             : deposit.getAmount(),
                     deposit.getDate(),
                     deposit.getDescription(),
-                    fundBoxInfo,
                     deposit.getTransactionType().toString(),
                     ownerInfo
             );
