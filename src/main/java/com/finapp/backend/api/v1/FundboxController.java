@@ -1,9 +1,9 @@
 package com.finapp.backend.api.v1;
 
-import com.finapp.backend.dto.fundbox.CreateFundBoxRequest;
-import com.finapp.backend.dto.fundbox.FundBoxDetailsResponse;
-import com.finapp.backend.dto.fundbox.FundBoxResponse;
-import com.finapp.backend.dto.fundbox.UpdateFundBoxRequest;
+import com.finapp.backend.dto.fundbox.v1.CreateFundBoxRequest;
+import com.finapp.backend.dto.fundbox.v1.FundBoxDetailsResponse;
+import com.finapp.backend.dto.fundbox.v1.FundBoxResponse;
+import com.finapp.backend.dto.fundbox.v1.UpdateFundBoxRequest;
 import com.finapp.backend.domain.service.FundboxService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
