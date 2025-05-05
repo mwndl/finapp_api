@@ -1,6 +1,6 @@
 package com.finapp.backend.dto.user;
 
-import com.finapp.backend.dto.fundbox.FundBoxSummary;
+import com.finapp.backend.dto.fundbox.v1.FundBoxSummary;
 import lombok.Data;
 
 import java.time.LocalDateTime;
