@@ -15,7 +15,6 @@ import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.model.enums.TransactionType;
 import com.finapp.backend.domain.repository.DepositRepository;
 import com.finapp.backend.domain.repository.FundBoxRepository;
-import com.finapp.backend.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
