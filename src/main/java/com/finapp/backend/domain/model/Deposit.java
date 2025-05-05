@@ -7,7 +7,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcType;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
