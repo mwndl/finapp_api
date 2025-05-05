@@ -1,9 +1,10 @@
 package com.finapp.backend.domain.service;
 
+import com.finapp.backend.domain.model.Deposit;
 import com.finapp.backend.domain.model.FundBox;
 import com.finapp.backend.domain.model.User;
+import com.finapp.backend.domain.model.enums.TransactionType;
 import com.finapp.backend.domain.service.utils.UserUtilService;
-import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.fundbox.v1.*;
 import com.finapp.backend.dto.fundbox.v2.*;
 import com.finapp.backend.dto.user.InviteResponse;
@@ -21,7 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -52,21 +55,19 @@ public class FundboxService {
 
         Page<FundBox> fundBoxes = fundBoxRepository.findByOwnerIdOrCollaboratorsContaining(user.getId(), pageable);
 
-        if (fundBoxes.isEmpty()) {
+        if (fundBoxes.isEmpty())
             return ResponseEntity.noContent().build();
-        }
 
         Page<FundBoxResponse> fundBoxResponses = fundBoxes.map(fb -> fundBoxManager.buildFundBoxResponse(fb, fb.getOwner()));
         return ResponseEntity.ok(fundBoxResponses);
     }
-
 
     public FundBoxDetailsResponse getFundBoxDetails(UUID fundBoxId, String email, Pageable pageable) {
         User user = userUtilService.getActiveUserByEmail(email);
 
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
         BigDecimal balance = fundBoxManager.calculateBalance(fundBoxId);
-        Page<DepositResponse> depositResponses = fundBoxManager.getDepositResponses(fundBoxId, pageable);
+        Page<FundboxDepositResponse> depositResponses = fundBoxManager.getDepositResponses(fundBoxId, pageable);
 
         List<CollaboratorResponse> collaborators = fundBox.getCollaborators().stream()
                 .map(collaborator -> new CollaboratorResponse(
@@ -88,11 +89,11 @@ public class FundboxService {
                 fundBox.getName(),
                 fundBox.getFinancialGoal(),
                 fundBox.getTargetDate(),
-                new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName()),
                 balance,
-                depositResponses,
+                new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName()),
                 collaborators,
-                invites
+                invites,
+                depositResponses
         );
     }
 
@@ -142,7 +143,6 @@ public class FundboxService {
 
         List<CollaboratorResponseV2> collaborators = fundBox.getCollaborators().stream()
                 .map(collaborator -> {
-                    User collaboratorUser = collaborator.getUser();
                     BigDecimal totalAmount = totalContributionsPerUser.getOrDefault(collaborator.getUser(), BigDecimal.ZERO);
                     BigDecimal totalUserEntries = totalEntriesPerUser.getOrDefault(collaborator.getUser(), BigDecimal.ZERO);
                     BigDecimal totalUserExits = totalExitsPerUser.getOrDefault(collaborator.getUser(), BigDecimal.ZERO);
