@@ -1,4 +1,4 @@
-package com.finapp.backend.dto.fundbox;
+package com.finapp.backend.dto.fundbox.v1;
 
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;

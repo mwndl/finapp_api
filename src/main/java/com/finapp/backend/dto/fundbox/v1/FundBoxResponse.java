@@ -1,4 +1,4 @@
-package com.finapp.backend.dto.fundbox;
+package com.finapp.backend.dto.fundbox.v1;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
