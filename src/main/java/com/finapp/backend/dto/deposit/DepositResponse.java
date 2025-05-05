@@ -1,6 +1,6 @@
 package com.finapp.backend.dto.deposit;
 
-import com.finapp.backend.dto.fundbox.OwnerResponse;
+import com.finapp.backend.dto.fundbox.v1.OwnerResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
