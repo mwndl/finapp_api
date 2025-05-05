@@ -6,7 +6,7 @@ import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.DepositSummaryResponse;
 import com.finapp.backend.dto.deposit.UpdateDepositRequest;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
-import com.finapp.backend.dto.fundbox.OwnerResponse;
+import com.finapp.backend.dto.fundbox.v1.OwnerResponse;
 import com.finapp.backend.exception.ApiErrorCode;
 import com.finapp.backend.exception.ApiException;
 import com.finapp.backend.domain.model.Deposit;
