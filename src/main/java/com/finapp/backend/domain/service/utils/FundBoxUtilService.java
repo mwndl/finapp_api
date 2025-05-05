@@ -2,10 +2,7 @@ package com.finapp.backend.domain.service.utils;
 
 import com.finapp.backend.dto.deposit.DepositResponse;
 import com.finapp.backend.dto.deposit.FundBoxInfo;
-import com.finapp.backend.dto.fundbox.CreateFundBoxRequest;
-import com.finapp.backend.dto.fundbox.FundBoxResponse;
-import com.finapp.backend.dto.fundbox.FundBoxSummary;
-import com.finapp.backend.dto.fundbox.OwnerResponse;
+import com.finapp.backend.dto.fundbox.v1.*;
 import com.finapp.backend.dto.user.InviteResponse;
 import com.finapp.backend.dto.user.UserSummary;
 import com.finapp.backend.exception.ApiErrorCode;
