@@ -1,9 +1,9 @@
-package com.finapp.backend.domain.repository;
+package com.finapp.backend.features.v1.fundbox.repository;
 
 import com.finapp.backend.domain.model.FundBox;
 import com.finapp.backend.domain.model.FundBoxInvitation;
 import com.finapp.backend.domain.model.User;
-import com.finapp.backend.domain.model.enums.InvitationStatus;
+import com.finapp.backend.domain.enums.InvitationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

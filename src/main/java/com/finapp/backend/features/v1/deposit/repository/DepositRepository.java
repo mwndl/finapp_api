@@ -1,7 +1,7 @@
-package com.finapp.backend.domain.repository;
+package com.finapp.backend.features.v1.deposit.repository;
 
 import com.finapp.backend.domain.model.Deposit;
-import com.finapp.backend.domain.model.enums.TransactionType;
+import com.finapp.backend.domain.enums.TransactionType;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,7 +1,7 @@
-package com.finapp.backend.domain.repository;
+package com.finapp.backend.features.v1.user.repository;
 
 import com.finapp.backend.domain.model.User;
-import com.finapp.backend.domain.model.enums.UserStatus;
+import com.finapp.backend.domain.enums.UserStatus;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

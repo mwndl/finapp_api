@@ -1,4 +1,4 @@
-package com.finapp.backend.domain.repository;
+package com.finapp.backend.features.v1.auth.repository;
 
 import com.finapp.backend.domain.model.LoginAttempt;
 import org.springframework.data.jpa.repository.JpaRepository;

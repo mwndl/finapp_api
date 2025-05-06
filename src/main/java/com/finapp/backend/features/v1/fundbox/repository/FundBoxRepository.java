@@ -1,4 +1,4 @@
-package com.finapp.backend.domain.repository;
+package com.finapp.backend.features.v1.fundbox.repository;
 
 import com.finapp.backend.domain.model.FundBox;
 import org.springframework.data.domain.Page;
