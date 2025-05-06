@@ -3,7 +3,7 @@ package com.finapp.backend.features.v1.auth.service;
 import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.model.UserToken;
 import com.finapp.backend.features.v1.auth.repository.UserTokenRepository;
-import com.finapp.backend.features.v1.utils.UserUtilService;
+import com.finapp.backend.features.v1.utils.UserServiceHelper;
 import com.finapp.backend.features.v1.auth.dto.SessionInfo;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.shared.exception.ApiException;
@@ -19,10 +19,10 @@ import java.util.UUID;
 public class SessionService {
 
     private final UserTokenRepository userTokenRepository;
-    private final UserUtilService userUtilService;
+    private final UserServiceHelper userServiceHelper;
 
     public List<SessionInfo> getActiveSessions(String email, String currentAccessToken) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         List<UserToken> tokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
         return tokens.stream()
                 .map(token -> new SessionInfo(
@@ -46,7 +46,7 @@ public class SessionService {
     }
 
     public void revokeSpecificSession(UUID sessionId, String email, String currentAccessToken) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         UserToken userSession = getActiveSessionById(sessionId);
 
         if (!userSession.getUser().equals(user))
@@ -67,7 +67,7 @@ public class SessionService {
     }
 
     public void logoutAllSessions(String email,String currentAccessToken) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         List<UserToken> activeTokens = userTokenRepository.findAllByUserAndRevokedFalse(user);
 
         for (UserToken token : activeTokens) {

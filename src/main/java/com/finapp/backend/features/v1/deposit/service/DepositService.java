@@ -1,6 +1,6 @@
 package com.finapp.backend.features.v1.deposit.service;
 
-import com.finapp.backend.features.v1.utils.UserUtilService;
+import com.finapp.backend.features.v1.utils.UserServiceHelper;
 import com.finapp.backend.features.v1.deposit.dto.CreateDepositRequest;
 import com.finapp.backend.features.v1.deposit.dto.DepositResponse;
 import com.finapp.backend.features.v1.deposit.dto.DepositSummaryResponse;
@@ -33,10 +33,10 @@ public class DepositService {
 
     private final DepositRepository depositRepository;
     private final FundBoxRepository fundBoxRepository;
-    private final UserUtilService userUtilService;
+    private final UserServiceHelper userServiceHelper;
 
     public void createDeposit(String email, CreateDepositRequest request) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         validateCreateRequest(request);
         FundBox fundBox = (request.getFundBoxId() != null) ? validateAndGetFundBox(request.getFundBoxId(), email) : null;
         Deposit deposit = createDepositFromRequest(request, user, fundBox);
@@ -45,7 +45,7 @@ public class DepositService {
 
 
     public ResponseEntity<Page<DepositResponse>> listUserDeposits(String email, List<TransactionType> transactionTypes, Pageable pageable) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         Page<Deposit> depositPage = getUserDeposits(user, transactionTypes, pageable);
         if (depositPage.isEmpty())
             return ResponseEntity.noContent().build();
@@ -55,7 +55,7 @@ public class DepositService {
     }
 
     public DepositResponse getDepositById(UUID depositId, String email) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
         validateDepositAccess(deposit, user);
@@ -63,7 +63,7 @@ public class DepositService {
     }
 
     public DepositSummaryResponse getDepositSummary(String email) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         BigDecimal entryTotal = calculateTotalForTransactionType(user, TransactionType.ENTRY);
         BigDecimal exitTotal = calculateTotalForTransactionType(user, TransactionType.EXIT);
         BigDecimal balance = entryTotal.subtract(exitTotal);
@@ -71,7 +71,7 @@ public class DepositService {
     }
 
     public DepositResponse updateDeposit(UUID depositId, String email, UpdateDepositRequest request) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
         validateDepositOwnership(deposit, user);
@@ -81,7 +81,7 @@ public class DepositService {
     }
 
     public void deleteDeposit(UUID depositId, String email) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
         validateDepositOwnership(deposit, user);
@@ -252,7 +252,7 @@ public class DepositService {
     }
 
     public void unlinkDepositFromFundBox(UUID depositId, String email) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
         Deposit deposit = depositRepository.findById(depositId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.DEPOSIT_NOT_FOUND));
 

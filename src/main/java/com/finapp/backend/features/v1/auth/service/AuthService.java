@@ -5,7 +5,7 @@ import com.finapp.backend.domain.enums.UserStatus;
 import com.finapp.backend.features.v1.auth.dto.AuthResponse;
 import com.finapp.backend.features.v1.auth.dto.LoginRequest;
 import com.finapp.backend.features.v1.auth.dto.RegisterRequest;
-import com.finapp.backend.features.v1.utils.ValidationService;
+import com.finapp.backend.features.v1.utils.ValidationServiceHelper;
 import com.finapp.backend.shared.exception.ApiException;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.domain.model.User;
@@ -37,7 +37,7 @@ public class AuthService {
     private final UserTokenRepository userTokenRepository;
     private final UserDetailsService userDetailsService;
     private final LoginAttemptService loginAttemptService;
-    private final ValidationService validationService;
+    private final ValidationServiceHelper validationService;
 
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
         if (userRepository.findByEmail(request.getEmail()).isPresent())

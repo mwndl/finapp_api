@@ -2,8 +2,8 @@ package com.finapp.backend.features.v1.user.service;
 
 import com.finapp.backend.domain.event.PasswordChangedEvent;
 import com.finapp.backend.domain.enums.UserStatus;
-import com.finapp.backend.features.v1.utils.ValidationService;
-import com.finapp.backend.features.v1.utils.UserUtilService;
+import com.finapp.backend.features.v1.utils.ValidationServiceHelper;
+import com.finapp.backend.features.v1.utils.UserServiceHelper;
 import com.finapp.backend.features.v1.user.dto.UserResponse;
 import com.finapp.backend.features.v1.user.dto.UserSearchResult;
 import com.finapp.backend.shared.exception.ApiErrorCode;
@@ -27,13 +27,13 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ApplicationEventPublisher eventPublisher;
-    private final UserUtilService userUtilService;
+    private final UserServiceHelper userServiceHelper;
     private final SessionService sessionService;
-    private final ValidationService validationService;
+    private final ValidationServiceHelper validationService;
 
     public UserResponse getUserInfo(String email) {
-        User user = userUtilService.getUserByEmail(email);
-        userUtilService.checkUserStatus(user);
+        User user = userServiceHelper.getUserByEmail(email);
+        userServiceHelper.checkUserStatus(user);
 
         return new UserResponse(user.getId(), user.getUsername(), user.getName(), user.getEmail());
     }
@@ -44,7 +44,7 @@ public class UserService {
 
         // search for exact username
         try {
-            User exactMatch = userUtilService.getUserByUsername(identifier);
+            User exactMatch = userServiceHelper.getUserByUsername(identifier);
             results.add(new UserSearchResult(exactMatch.getId(), exactMatch.getUsername(), exactMatch.getName(), 1.0));
             addedIds.add(exactMatch.getId());
         } catch (ApiException e) {
@@ -76,8 +76,8 @@ public class UserService {
     }
 
     public void updateUserData(String email, String newName, String newUsername) {
-        User user = userUtilService.getUserByEmail(email);
-        userUtilService.checkUserStatus(user);
+        User user = userServiceHelper.getUserByEmail(email);
+        userServiceHelper.checkUserStatus(user);
 
         if (newName != null && !newName.trim().isEmpty())
             updateName(user, newName);
@@ -86,14 +86,14 @@ public class UserService {
     }
 
     public void updatePasswordByEmail(String email, String newPassword) {
-        User user = userUtilService.getUserByEmail(email);
-        userUtilService.checkUserStatus(user);
+        User user = userServiceHelper.getUserByEmail(email);
+        userServiceHelper.checkUserStatus(user);
         updateUserPassword(user, newPassword);
     }
 
     public void updateUserPassword(String email, String currentPassword, String newPassword) {
-        User user = userUtilService.getUserByEmail(email);
-        userUtilService.checkUserStatus(user);
+        User user = userServiceHelper.getUserByEmail(email);
+        userServiceHelper.checkUserStatus(user);
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash()))
             throw new ApiException(ApiErrorCode.INVALID_CREDENTIALS);
 
@@ -101,8 +101,8 @@ public class UserService {
     }
 
     public void requestAccountDeletion(String email) {
-        User user = userUtilService.getUserByEmail(email);
-        userUtilService.checkUserStatus(user);
+        User user = userServiceHelper.getUserByEmail(email);
+        userServiceHelper.checkUserStatus(user);
 
         user.setStatus(UserStatus.DEACTIVATION_REQUESTED);
         user.setDeletionRequestedAt(LocalDateTime.now());

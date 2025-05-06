@@ -6,8 +6,8 @@ import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.enums.InvitationStatus;
 import com.finapp.backend.domain.enums.TransactionType;
 import com.finapp.backend.features.v1.fundbox.repository.FundBoxInvitationRepository;
-import com.finapp.backend.features.v1.utils.FundBoxUtilService;
-import com.finapp.backend.features.v1.utils.UserUtilService;
+import com.finapp.backend.features.v1.utils.FundboxServiceHelper;
+import com.finapp.backend.features.v1.utils.UserServiceHelper;
 import com.finapp.backend.features.v1.fundbox.dto.FundboxDepositResponse;
 import com.finapp.backend.features.v1.user.dto.InviteResponse;
 import com.finapp.backend.features.v2.fundbox.dto.*;
@@ -28,11 +28,11 @@ import java.util.stream.Collectors;
 public class FundboxServiceV2 {
 
     private final FundBoxInvitationRepository fundBoxInvitationRepository;
-    private final FundBoxUtilService fundBoxManager;
-    private final UserUtilService userUtilService;
+    private final FundboxServiceHelper fundBoxManager;
+    private final UserServiceHelper userServiceHelper;
 
     public FundBoxDetailsResponseV2 getFundBoxDetailsV2(UUID fundBoxId, String email, Pageable pageable) {
-        User user = userUtilService.getActiveUserByEmail(email);
+        User user = userServiceHelper.getActiveUserByEmail(email);
 
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, user);
         Page<FundboxDepositResponse> depositResponses = fundBoxManager.getDepositResponses(fundBoxId, pageable);

@@ -5,9 +5,9 @@ import com.finapp.backend.features.v1.auth.dto.*;
 import com.finapp.backend.features.v1.auth.service.AuthService;
 import com.finapp.backend.features.v1.auth.service.SessionService;
 import com.finapp.backend.features.v1.user.service.UserService;
-import com.finapp.backend.features.v1.utils.EmailService;
+import com.finapp.backend.features.v1.utils.EmailServiceHelper;
 import com.finapp.backend.features.v1.auth.service.PasswordResetService;
-import com.finapp.backend.features.v1.utils.ResetLinkBuilder;
+import com.finapp.backend.features.v1.utils.ResetLinkBuilderHelper;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.shared.exception.ApiException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,9 +33,9 @@ public class AuthController {
     private final AuthService authService;
     private final SessionService sessionService;
     private final PasswordResetService passwordResetService;
-    private final EmailService emailService;
+    private final EmailServiceHelper emailService;
     private final UserService userService;
-    private final ResetLinkBuilder resetLinkBuilder;
+    private final ResetLinkBuilderHelper resetLinkBuilderHelper;
 
     @PostMapping("/register")
     @Operation(
@@ -179,7 +179,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public void forgotPassword(@RequestBody ForgotPasswordRequest request) {
         PasswordResetToken token = passwordResetService.createToken(request.getEmail());
-        String resetLink = resetLinkBuilder.buildResetPasswordLink(token.getToken());
+        String resetLink = resetLinkBuilderHelper.buildResetPasswordLink(token.getToken());
 
         String message = "Click the link to reset your password: " + resetLink;
         emailService.sendEmail(request.getEmail(), "Password Reset", message);

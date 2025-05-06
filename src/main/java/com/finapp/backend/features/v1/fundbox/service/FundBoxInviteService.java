@@ -1,6 +1,6 @@
 package com.finapp.backend.features.v1.fundbox.service;
 
-import com.finapp.backend.features.v1.utils.UserUtilService;
+import com.finapp.backend.features.v1.utils.UserServiceHelper;
 import com.finapp.backend.features.v1.user.dto.InviteResponse;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.shared.exception.ApiException;
@@ -11,7 +11,7 @@ import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.enums.InvitationStatus;
 import com.finapp.backend.features.v1.fundbox.repository.FundBoxInvitationRepository;
 import com.finapp.backend.features.v1.fundbox.repository.FundBoxRepository;
-import com.finapp.backend.features.v1.utils.FundBoxUtilService;
+import com.finapp.backend.features.v1.utils.FundboxServiceHelper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,14 +24,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FundBoxInviteService {
 
-    private final FundBoxUtilService fundBoxManager;
+    private final FundboxServiceHelper fundBoxManager;
     private final FundBoxInvitationRepository fundBoxInvitationRepository;
     private final FundBoxRepository fundBoxRepository;
-    private final UserUtilService userUtilService;
+    private final UserServiceHelper userServiceHelper;
 
     public void inviteCollaborator(UUID fundBoxId, String email, UUID collaboratorId) {
-        User inviter = userUtilService.getUserByEmail(email);
-        userUtilService.checkUserStatus(inviter);
+        User inviter = userServiceHelper.getUserByEmail(email);
+        userServiceHelper.checkUserStatus(inviter);
 
         FundBox fundBox = fundBoxManager.getFundBoxById(fundBoxId, inviter);
 
@@ -41,8 +41,8 @@ public class FundBoxInviteService {
         if (fundBox.getOwner().getId().equals(collaboratorId))
             throw new ApiException(ApiErrorCode.COLLABORATOR_CANNOT_BE_OWNER);
 
-        User invitee = userUtilService.getUserById(collaboratorId);
-        userUtilService.checkUserStatus(invitee);
+        User invitee = userServiceHelper.getUserById(collaboratorId);
+        userServiceHelper.checkUserStatus(invitee);
 
         boolean isAlreadyCollaborator = fundBox.getCollaborators().stream()
                 .anyMatch(c -> c.getUser().getId().equals(collaboratorId));
@@ -64,7 +64,7 @@ public class FundBoxInviteService {
     }
 
     public Page<InviteResponse> getSentInvites(String email, Pageable pageable) {
-        User inviter = userUtilService.getUserByEmail(email);
+        User inviter = userServiceHelper.getUserByEmail(email);
         return fundBoxInvitationRepository.findByInviter(inviter, pageable)
                 .map(fundBoxManager::toInviteResponse);
     }
@@ -73,7 +73,7 @@ public class FundBoxInviteService {
         FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
 
-        User inviter = userUtilService.getUserByEmail(email);
+        User inviter = userServiceHelper.getUserByEmail(email);
         if (!invitation.getInviter().getId().equals(inviter.getId()))
             throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
 
@@ -84,7 +84,7 @@ public class FundBoxInviteService {
     }
 
     public Page<InviteResponse> getUserInvites(String username, Pageable pageable) {
-        User user = userUtilService.getUserByEmail(username);
+        User user = userServiceHelper.getUserByEmail(username);
         Page<FundBoxInvitation> invites = fundBoxInvitationRepository.findByInvitee_Id(user.getId(), pageable);
         return invites.map(fundBoxManager::toInviteResponse);
     }
