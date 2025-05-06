@@ -2,7 +2,7 @@ package com.finapp.backend.features.v1.auth.service;
 
 import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.model.UserToken;
-import com.finapp.backend.domain.repository.UserTokenRepository;
+import com.finapp.backend.features.v1.auth.repository.UserTokenRepository;
 import com.finapp.backend.features.v1.utils.UserUtilService;
 import com.finapp.backend.features.v1.auth.dto.SessionInfo;
 import com.finapp.backend.shared.exception.ApiErrorCode;

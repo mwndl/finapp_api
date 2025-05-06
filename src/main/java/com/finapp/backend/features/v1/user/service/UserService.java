@@ -1,7 +1,7 @@
 package com.finapp.backend.features.v1.user.service;
 
 import com.finapp.backend.domain.event.PasswordChangedEvent;
-import com.finapp.backend.domain.model.enums.UserStatus;
+import com.finapp.backend.domain.enums.UserStatus;
 import com.finapp.backend.features.v1.utils.ValidationService;
 import com.finapp.backend.features.v1.utils.UserUtilService;
 import com.finapp.backend.features.v1.user.dto.UserResponse;
@@ -9,7 +9,7 @@ import com.finapp.backend.features.v1.user.dto.UserSearchResult;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.shared.exception.ApiException;
 import com.finapp.backend.domain.model.User;
-import com.finapp.backend.domain.repository.UserRepository;
+import com.finapp.backend.features.v1.user.repository.UserRepository;
 import com.finapp.backend.features.v1.auth.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;

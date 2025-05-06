@@ -1,6 +1,6 @@
 package com.finapp.backend.features.v1.utils;
 
-import com.finapp.backend.domain.repository.UserRepository;
+import com.finapp.backend.features.v1.user.repository.UserRepository;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.shared.exception.ApiException;
 import lombok.RequiredArgsConstructor;

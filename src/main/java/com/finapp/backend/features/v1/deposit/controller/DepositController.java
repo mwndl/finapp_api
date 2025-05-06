@@ -4,7 +4,7 @@ import com.finapp.backend.features.v1.deposit.dto.CreateDepositRequest;
 import com.finapp.backend.features.v1.deposit.dto.DepositResponse;
 import com.finapp.backend.features.v1.deposit.dto.DepositSummaryResponse;
 import com.finapp.backend.features.v1.deposit.dto.UpdateDepositRequest;
-import com.finapp.backend.domain.model.enums.TransactionType;
+import com.finapp.backend.domain.enums.TransactionType;
 import com.finapp.backend.features.v1.deposit.service.DepositService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

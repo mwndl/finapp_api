@@ -1,6 +1,6 @@
 package com.finapp.backend.features.v1.deposit.dto;
 
-import com.finapp.backend.domain.model.enums.TransactionType;
+import com.finapp.backend.domain.enums.TransactionType;
 import lombok.Data;
 
 import java.math.BigDecimal;

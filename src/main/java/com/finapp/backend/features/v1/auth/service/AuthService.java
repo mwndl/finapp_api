@@ -1,7 +1,7 @@
 package com.finapp.backend.features.v1.auth.service;
 
 import com.finapp.backend.domain.model.LoginAttempt;
-import com.finapp.backend.domain.model.enums.UserStatus;
+import com.finapp.backend.domain.enums.UserStatus;
 import com.finapp.backend.features.v1.auth.dto.AuthResponse;
 import com.finapp.backend.features.v1.auth.dto.LoginRequest;
 import com.finapp.backend.features.v1.auth.dto.RegisterRequest;
@@ -10,8 +10,8 @@ import com.finapp.backend.shared.exception.ApiException;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.domain.model.User;
 import com.finapp.backend.domain.model.UserToken;
-import com.finapp.backend.domain.repository.UserRepository;
-import com.finapp.backend.domain.repository.UserTokenRepository;
+import com.finapp.backend.features.v1.user.repository.UserRepository;
+import com.finapp.backend.features.v1.auth.repository.UserTokenRepository;
 import com.finapp.backend.shared.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

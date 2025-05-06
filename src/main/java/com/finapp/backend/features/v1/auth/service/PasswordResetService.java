@@ -1,7 +1,7 @@
 package com.finapp.backend.features.v1.auth.service;
 
 import com.finapp.backend.domain.model.PasswordResetToken;
-import com.finapp.backend.domain.repository.PasswordResetTokenRepository;
+import com.finapp.backend.features.v1.auth.repository.PasswordResetTokenRepository;
 import com.finapp.backend.shared.exception.ApiErrorCode;
 import com.finapp.backend.shared.exception.ApiException;
 import org.springframework.beans.factory.annotation.Autowired;

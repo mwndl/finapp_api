@@ -1,7 +1,7 @@
 package com.finapp.backend.shared.task;
 
-import com.finapp.backend.domain.model.enums.UserStatus;
-import com.finapp.backend.domain.repository.UserRepository;
+import com.finapp.backend.domain.enums.UserStatus;
+import com.finapp.backend.features.v1.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
