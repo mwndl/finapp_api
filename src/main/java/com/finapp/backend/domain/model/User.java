@@ -1,6 +1,6 @@
 package com.finapp.backend.domain.model;
 
-import com.finapp.backend.domain.model.enums.UserStatus;
+import com.finapp.backend.domain.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;

@@ -1,6 +1,6 @@
 package com.finapp.backend.domain.model;
 
-import com.finapp.backend.domain.model.enums.InvitationStatus;
+import com.finapp.backend.domain.enums.InvitationStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;

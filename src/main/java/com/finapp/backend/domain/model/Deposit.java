@@ -1,6 +1,6 @@
 package com.finapp.backend.domain.model;
 
-import com.finapp.backend.domain.model.enums.TransactionType;
+import com.finapp.backend.domain.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
