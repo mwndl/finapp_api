@@ -1,7 +1,7 @@
 package com.finapp.backend.domain.listener;
 
 import com.finapp.backend.domain.event.PasswordChangedEvent;
-import com.finapp.backend.domain.service.SessionService;
+import com.finapp.backend.v1.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
