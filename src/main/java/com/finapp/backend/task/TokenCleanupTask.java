@@ -18,24 +18,32 @@ public class TokenCleanupTask {
     private final UserTokenRepository userTokenRepository;
     private final JwtUtil jwtUtil;
 
-    @Scheduled(cron = "0 0 1 * * *") // 1 am
+    @Scheduled(cron = "0 0 1 * * *")
     public void deleteExpiredOrNonRevokedTokens() {
-        List<UserToken> userTokens = userTokenRepository.findByRevokedFalse();
+        List<UserToken> userTokens = userTokenRepository.findAll();
 
         int deleted = 0;
 
         for (UserToken userToken : userTokens) {
-            if (jwtUtil.isTokenExpired(userToken.getRefreshToken())) {
+            try {
+                boolean expired = jwtUtil.isTokenExpired(userToken.getRefreshToken());
+                if (expired || userToken.isRevoked()) {
+                    userTokenRepository.delete(userToken);
+                    deleted++;
+                    log.info("Deleted {} token for user ID: {}", expired ? "expired" : "revoked", userToken.getUser().getId());
+                }
+            } catch (io.jsonwebtoken.ExpiredJwtException e) {
                 userTokenRepository.delete(userToken);
                 deleted++;
-                log.info("Deleted expired token for user ID: {}", userToken.getUser().getId());
+                log.info("Deleted (caught ExpiredJwtException) token for user ID: {}", userToken.getUser().getId());
+            } catch (Exception e) {
+                log.warn("Failed to process token for user ID: {} - {}", userToken.getUser().getId(), e.getMessage());
             }
         }
 
-        if (deleted > 0) {
-            log.info("Deleted {} expired or non-revoked tokens", deleted);
-        } else {
+        if (deleted > 0)
+            log.info("Deleted {} expired or revoked tokens", deleted);
+        else
             log.info("No tokens to delete.");
-        }
     }
 }
