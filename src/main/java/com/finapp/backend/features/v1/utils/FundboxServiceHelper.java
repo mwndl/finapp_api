@@ -26,13 +26,13 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class FundBoxUtilService {
+public class FundboxServiceHelper {
 
     private final UserRepository userRepository;
     private final FundBoxRepository fundBoxRepository;
     private final DepositRepository depositRepository;
     private final FundBoxInvitationRepository fundBoxInvitationRepository;
-    private final UserUtilService userUtilService;
+    private final UserServiceHelper userServiceHelper;
 
     public boolean fundBoxExists(UUID userId, String name) {
         return fundBoxRepository.existsByOwnerIdAndName(userId, name.trim());
@@ -108,7 +108,7 @@ public class FundBoxUtilService {
         FundBoxInvitation invitation = fundBoxInvitationRepository.findById(invitationId)
                 .orElseThrow(() -> new ApiException(ApiErrorCode.INVITATION_NOT_FOUND));
 
-        User user = userUtilService.getUserByEmail(email);
+        User user = userServiceHelper.getUserByEmail(email);
         if (!invitation.getInvitee().getId().equals(user.getId())) {
             throw new ApiException(ApiErrorCode.FORBIDDEN_ACTION);
         }

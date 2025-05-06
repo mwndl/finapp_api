@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class UserUtilService {
+public class UserServiceHelper {
 
     private final UserRepository userRepository;
 

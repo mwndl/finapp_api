@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 
 @Service
 @RequiredArgsConstructor
-public class ValidationService {
+public class ValidationServiceHelper {
 
     private final UserRepository userRepository;
 
