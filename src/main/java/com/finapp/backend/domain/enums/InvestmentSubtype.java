@@ -1,4 +1,4 @@
-package com.finapp.backend.domain.model.enums;
+package com.finapp.backend.domain.enums;
 
 public enum InvestmentSubtype {
     TESOURO_SELIC(InvestmentType.FIXED_INCOME),
