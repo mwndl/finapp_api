@@ -1,7 +1,7 @@
 package com.finapp.backend.config;
 
-import com.finapp.backend.security.CustomAuthenticationHandler;
-import com.finapp.backend.security.JwtAuthenticationFilter;
+import com.finapp.backend.shared.security.CustomAuthenticationHandler;
+import com.finapp.backend.shared.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
