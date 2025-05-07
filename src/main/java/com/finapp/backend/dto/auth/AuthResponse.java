@@ -8,6 +8,9 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 public class AuthResponse {
-    private String token;
-    private Date expiresAt;
+    private String accessToken;
+    private Date accessTokenExpiresAt;
+    private String refreshToken;
+    private Date refreshTokenExpiresAt;
 }
+

@@ -6,11 +6,12 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 public class DepositResponse {
-    private Long id;
+    private UUID id;
     private BigDecimal amount;
     private LocalDate date;
     private String description;

@@ -9,11 +9,12 @@ import org.springframework.data.domain.Page;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @Data
 public class FundBoxDetailsResponse {
-    private Long id;
+    private UUID id;
     private String name;
     private BigDecimal financialGoal;
     private LocalDate targetDate;
@@ -23,7 +24,7 @@ public class FundBoxDetailsResponse {
     private List<InviteResponse> invites;
     private List<DepositResponse> deposits;
 
-    public FundBoxDetailsResponse(Long id, String name, BigDecimal financialGoal, LocalDate targetDate, OwnerResponse ownerResponse, BigDecimal balance, Page<DepositResponse> depositResponses, List<CollaboratorResponse> collaborators, List<InviteResponse> invites) {
+    public FundBoxDetailsResponse(UUID id, String name, BigDecimal financialGoal, LocalDate targetDate, OwnerResponse ownerResponse, BigDecimal balance, Page<DepositResponse> depositResponses, List<CollaboratorResponse> collaborators, List<InviteResponse> invites) {
         this.id = id;
         this.name = name;
         this.financialGoal = financialGoal;
