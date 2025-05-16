@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class RateLimitingFilter extends OncePerRequestFilter {
 
-    private static final int MAX_REQUESTS_PER_MINUTE = 5;
+    private static final int MAX_REQUESTS_PER_MINUTE = 30;
 
     private static class RequestInfo {
         int count;
