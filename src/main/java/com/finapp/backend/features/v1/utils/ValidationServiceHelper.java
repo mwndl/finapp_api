@@ -17,11 +17,12 @@ public class ValidationServiceHelper {
     private final UserRepository userRepository;
 
     public void validateName(String name) {
-        String nameRegex = "^[A-Za-zÀ-ÿ]+\\s+[A-Za-zÀ-ÿ]+(\\s+[A-Za-zÀ-ÿ]+)*$";
+        String nameRegex = "^[A-Za-zÀ-ÿ ]+$";
         Pattern pattern = Pattern.compile(nameRegex);
-        Matcher matcher = pattern.matcher(name);
+        Matcher matcher = pattern.matcher(name.trim());
 
-        if (!matcher.matches()) throw new ApiException(ApiErrorCode.NAME_INVALID);
+        if (!matcher.matches() || name.trim().length() < 2)
+            throw new ApiException(ApiErrorCode.NAME_INVALID);
     }
 
     public void validatePassword(String password) {
