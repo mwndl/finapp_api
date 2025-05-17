@@ -293,7 +293,8 @@ public class DepositService {
         if (deposit.getUser() != null) {
             ownerResponse = new OwnerResponse(
                     deposit.getUser().getId(),
-                    deposit.getUser().getName()
+                    deposit.getUser().getName(),
+                    deposit.getUser().getSurname()
             );
         }
 

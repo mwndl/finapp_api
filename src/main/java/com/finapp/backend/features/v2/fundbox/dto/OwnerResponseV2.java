@@ -10,6 +10,7 @@ import java.util.UUID;
 public class OwnerResponseV2 {
     private UUID id;
     private String name;
+    private String surname;
     private String username;
     private UserMetrics metrics;
 }

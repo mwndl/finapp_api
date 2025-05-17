@@ -6,6 +6,7 @@ import lombok.Data;
 public class UpdateUserDataRequest {
 
     private String newName;
+    private String newSurname;
     private String newUsername;
 
 }

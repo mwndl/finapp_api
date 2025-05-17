@@ -92,6 +92,7 @@ public class FundboxServiceV2 {
                     return new CollaboratorResponseV2(
                             collaborator.getUser().getId(),
                             collaborator.getUser().getName(),
+                            collaborator.getUser().getSurname(),
                             collaborator.getUser().getUsername(),
                             collaborator.getJoinedAt(),
                             userMetrics
@@ -131,6 +132,7 @@ public class FundboxServiceV2 {
         OwnerResponseV2 owner = new OwnerResponseV2(
                 ownerUser.getId(),
                 ownerUser.getName(),
+                ownerUser.getSurname(),
                 ownerUser.getUsername(),
                 ownerMetrics
         );

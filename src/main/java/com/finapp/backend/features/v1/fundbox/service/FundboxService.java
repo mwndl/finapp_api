@@ -85,7 +85,7 @@ public class FundboxService {
                 fundBox.getFinancialGoal(),
                 fundBox.getTargetDate(),
                 balance,
-                new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName()),
+                new OwnerResponse(fundBox.getOwner().getId(), fundBox.getOwner().getName(), fundBox.getOwner().getSurname()),
                 collaborators,
                 invites,
                 depositResponses

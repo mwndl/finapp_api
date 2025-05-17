@@ -53,7 +53,7 @@ public class FundboxServiceHelper {
                 fundBox.getName(),
                 fundBox.getFinancialGoal(),
                 fundBox.getTargetDate(),
-                new OwnerResponse(user.getId(), user.getName())
+                new OwnerResponse(user.getId(), user.getName(), user.getSurname())
         );
     }
 
@@ -87,7 +87,8 @@ public class FundboxServiceHelper {
             if (deposit.getUser() != null) {
                 ownerInfo = new OwnerResponse(
                         deposit.getUser().getId(),
-                        deposit.getUser().getName()
+                        deposit.getUser().getName(),
+                        deposit.getUser().getSurname()
                 );
             }
 
@@ -126,13 +127,15 @@ public class FundboxServiceHelper {
         response.setInviter(new UserSummary(
                 invite.getInviter().getId(),
                 invite.getInviter().getUsername(),
-                invite.getInviter().getName()
+                invite.getInviter().getName(),
+                invite.getInviter().getSurname()
 
         ));
         response.setInvitee(new UserSummary(
                 invite.getInvitee().getId(),
                 invite.getInvitee().getUsername(),
-                invite.getInvitee().getName()
+                invite.getInvitee().getName(),
+                invite.getInvitee().getSurname()
         ));
         response.setStatus(invite.getStatus().name());
         response.setInvitationDate(invite.getInvitationDate());

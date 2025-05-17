@@ -11,6 +11,7 @@ import java.util.UUID;
 public class CollaboratorResponseV2 {
     private UUID id;
     private String name;
+    private String surname;
     private String username;
     private LocalDate joinedAt;
     private UserMetrics metrics;

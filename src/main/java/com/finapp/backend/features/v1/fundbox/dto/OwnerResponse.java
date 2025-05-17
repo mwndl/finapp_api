@@ -10,4 +10,5 @@ import java.util.UUID;
 public class OwnerResponse {
     UUID id;
     String name;
+    String surname;
 }
