@@ -44,6 +44,7 @@ public class AuthService {
             throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
 
         validationService.validateName(request.getName());
+        validationService.validateName(request.getSurname());
         validationService.validateUsername(request.getUsername());
         validationService.validatePassword(request.getPassword());
 
