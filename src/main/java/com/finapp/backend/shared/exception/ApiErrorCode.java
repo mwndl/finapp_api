@@ -11,6 +11,7 @@ public enum ApiErrorCode {
     SAME_NAME(400, "SAME_NAME", "Name is the same", "The new name must be different from the current one"),
     SAME_PASSWORD(400, "SAME_PASSWORD", "Password is the same", "The new password must be different from the current one"),
     SAME_USERNAME(400, "SAME_USERNAME", "Username is the same", "The new username must be different from the current one"),
+    EMAIL_INVALID(400, "EMAIL_INVALID", "Email format is invalid", "The email address provided is not valid"),
     USERNAME_INVALID(400, "INVALID_USERNAME", "Invalid username", "Username must be 4-15 characters, all lowercase, using only letters, numbers, '.', '_' or '-', and must not start/end with special characters or contain double special characters"),
     USERNAME_RESERVED(400, "USERNAME_RESERVED", "Username is reserved", "This username is not allowed and cannot be used"),
 
