@@ -74,9 +74,9 @@ public class AuthService {
 
     public void validateUsernameAvailability(String username) {
         String normalized = username.trim().toLowerCase();
-        if (userRepository.existsByUsername(normalized)) {
+        validationService.validateUsername(normalized);
+        if (userRepository.existsByUsername(normalized)) 
             throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
-        }
     }
 
     public AuthResponse refreshToken(String refreshToken) {
