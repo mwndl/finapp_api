@@ -44,4 +44,13 @@ public class ValidationServiceHelper {
         if (RESERVED_USERNAMES.contains(username)) throw new ApiException(ApiErrorCode.USERNAME_RESERVED);
         if (userRepository.existsByUsername(username)) throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
     }
+
+    public void validateEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z]{2,}$";
+        Pattern pattern = Pattern.compile(emailRegex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(email);
+
+        if (!matcher.matches()) throw new ApiException(ApiErrorCode.EMAIL_INVALID);
+        if (userRepository.findByEmail(email).isPresent()) throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
+    } 
 }
