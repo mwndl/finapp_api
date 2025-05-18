@@ -212,6 +212,7 @@ public class AuthService {
     private User createUser(RegisterRequest request) {
         User user = new User();
         user.setName(request.getName());
+        user.setSurname(request.getSurname());
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
