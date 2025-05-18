@@ -73,8 +73,11 @@ public class AuthService {
     public void validateUsernameAvailability(String username) {
         String normalized = username.trim().toLowerCase();
         validationService.validateUsername(normalized);
-        if (userRepository.existsByUsername(normalized)) 
-            throw new ApiException(ApiErrorCode.USERNAME_ALREADY_TAKEN);
+    }
+
+    public void validateEmailAvailability(String email) {
+        String normalized = email.trim().toLowerCase();
+        validationService.validateEmail(normalized);
     }
 
     public AuthResponse refreshToken(String refreshToken) {
