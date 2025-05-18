@@ -78,6 +78,20 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+        @PostMapping("/validate-email")
+        @Operation(
+                summary = "Validate Email Availability",
+                description = "Checks if the given email is available for registration. If the email is already registered, it returns an error.",
+                responses = {
+                        @ApiResponse(responseCode = "200", description = "OK - Email is available for registration"),
+                        @ApiResponse(responseCode = "400", description = "Bad Request - Email is already registered")
+                }
+)
+    public ResponseEntity<Void> validateEmail(@RequestBody EmailValidationRequest request) {
+        authService.validateEmailAvailability(request.getEmail());
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/refresh")
     @Operation(
             summary = "Refresh access token",
