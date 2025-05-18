@@ -40,12 +40,10 @@ public class AuthService {
     private final ValidationServiceHelper validationService;
 
     public AuthResponse register(RegisterRequest request, HttpServletRequest httpRequest) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent())
-            throw new ApiException(ApiErrorCode.EMAIL_ALREADY_REGISTERED);
-
+        validationService.validateEmail(request.getEmail());
+        validationService.validateUsername(request.getUsername());
         validationService.validateName(request.getName());
         validationService.validateName(request.getSurname());
-        validationService.validateUsername(request.getUsername());
         validationService.validatePassword(request.getPassword());
 
         User user = createUser(request);
